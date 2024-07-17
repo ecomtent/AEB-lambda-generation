@@ -15,6 +15,13 @@ RUN yum -y update \
     git \
     && yum clean all
 
+# Install OpenSSL 1.1.1
+RUN yum -y install openssl11
+
+# Ensure the system uses the new OpenSSL version
+RUN ln -sf /usr/lib64/libssl.so.1.1 /usr/lib64/libssl.so \
+    && ln -sf /usr/lib64/libcrypto.so.1.1 /usr/lib64/libcrypto.so
+
 # Install Node.js 14
 RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash - \
     && yum -y install nodejs
