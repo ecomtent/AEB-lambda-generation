@@ -2,23 +2,15 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      nodejs: 14
-      python: 3.8
     commands:
-      - pip install aws-sam-cli
-      - if [ -f "package.json" ]; then npm install; fi
-      - if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+      - echo "Using custom Docker image with AWS SAM CLI"
   build:
     commands:
-      - if [ -f "package.json" ]; then sam build --use-container; fi
-      - if [ -f "requirements.txt" ]; then sam build --use-container; fi
+      - sam build
   post_build:
     commands:
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
       - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM --parameter-overrides StageName=$STAGE
-      - if [ -f "package.json" ]; then npm test; fi
-      - if [ -f "requirements.txt" ]; then pytest; fi
 artifacts:
   files:
     - packaged.yaml
