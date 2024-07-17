@@ -6,7 +6,7 @@ phases:
       nodejs: 14
       python: 3.8
     commands:
-      - npm install -g aws-sam-cli
+      - npm install -g @aws-sam/cli
       - if [ -f "package.json" ]; then npm install; fi
       - if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
   build:
@@ -15,8 +15,8 @@ phases:
       - if [ -f "requirements.txt" ]; then sam build --use-container; fi
   post_build:
     commands:
-      - sam package --output-template-file packaged.yaml --s3-bucket YOUR_S3_BUCKET
-      - sam deploy --template-file packaged.yaml --stack-name YOUR_STACK_NAME --capabilities CAPABILITY_IAM --parameter-overrides StageName=$STAGE
+      - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
+      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM --parameter-overrides StageName=$STAGE
       - if [ -f "package.json" ]; then npm test; fi
       - if [ -f "requirements.txt" ]; then pytest; fi
 artifacts:
