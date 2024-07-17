@@ -1,0 +1,19 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - npm install -g aws-sam-cli
+      - npm install
+  build:
+    commands:
+      - sam build
+  post_build:
+    commands:
+      - sam package --output-template-file packaged.yaml --s3-bucket YOUR_S3_BUCKET
+      - sam deploy --template-file packaged.yaml --stack-name YOUR_STACK_NAME --capabilities CAPABILITY_IAM
+      - npm test
+artifacts:
+  files:
+    - packaged.yaml

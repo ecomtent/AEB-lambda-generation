@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  Function1:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'src/function1/index.handler'
+      Runtime: 'nodejs14.x'
+      Events:
+        ApiGateway:
+          Type: 'Api'
+          Properties:
+            Path: '/function1'
+            Method: 'get'
+  Function2:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'src/function2/index.handler'
+      Runtime: 'nodejs14.x'
+      Events:
+        ApiGateway:
+          Type: 'Api'
+          Properties:
+            Path: '/function2'
+            Method: 'get'
