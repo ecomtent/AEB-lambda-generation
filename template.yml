@@ -6,7 +6,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: 'src/function1/index.handler'
-      Runtime: 'nodejs14.x'
+      Runtime: 'nodejs18.x'
       Events:
         ApiGateway:
           Type: 'Api'
@@ -17,7 +17,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: 'src/function2/index.handler'
-      Runtime: 'nodejs14.x'
+      Runtime: 'nodejs18.x'
       Events:
         ApiGateway:
           Type: 'Api'
