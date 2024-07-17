@@ -6,10 +6,7 @@ phases:
       nodejs: 14
       python: 3.8
     commands:
-      - echo "Downloading AWS SAM CLI..."
-      - curl -Lo aws-sam-cli-linux-x86_64.zip https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
-      - unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
-      - ./sam-installation/install
+      - pip install aws-sam-cli
       - if [ -f "package.json" ]; then npm install; fi
       - if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
   build:
