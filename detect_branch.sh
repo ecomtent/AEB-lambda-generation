@@ -10,28 +10,12 @@ echo "CODEBUILD_WEBHOOK_TRIGGER: $CODEBUILD_WEBHOOK_TRIGGER"
 echo "CODEBUILD_SOURCE_VERSION: $CODEBUILD_SOURCE_VERSION"
 echo "CODEBUILD_SOURCE_REPO_URL: $CODEBUILD_SOURCE_REPO_URL"
 
-# Check if the branch name is available via webhook trigger
-if [ -n "$CODEBUILD_WEBHOOK_TRIGGER" ]; then
-  TRIGGER_TYPE=$(echo "$CODEBUILD_WEBHOOK_TRIGGER" | cut -d'/' -f1)
-  if [ "$TRIGGER_TYPE" = "branch" ]; then
-    BRANCH=$(echo "$CODEBUILD_WEBHOOK_TRIGGER" | cut -d'/' -f2)
-  elif [ "$TRIGGER_TYPE" = "pr" ]; then
-    BRANCH="pull-request"
-  elif [ "$TRIGGER_TYPE" = "tag" ]; then
-    BRANCH="tag"
-  fi
-elif echo "$CODEBUILD_SOURCE_VERSION" | grep -q "arn:aws:s3:::"; then
-  # Handle S3 ARN in CODEBUILD_SOURCE_VERSION
-  if [ -n "$CODEBUILD_SOURCE_REPO_URL" ]; then
-    BRANCH=$(echo "$CODEBUILD_SOURCE_REPO_URL" | awk -F'/' '{print $NF}')
-  else
-    BRANCH="unknown"
-  fi
-else
-  # Fallback to checking CODEBUILD_SOURCE_VERSION for branch
-  if echo "$CODEBUILD_SOURCE_VERSION" | grep -q "refs/heads/"; then
-    BRANCH=$(echo "$CODEBUILD_SOURCE_VERSION" | sed 's|refs/heads/||')
-  fi
+# Determine the branch name from CODEBUILD_SOURCE_VERSION if it is an S3 ARN
+if echo "$CODEBUILD_SOURCE_VERSION" | grep -q "arn:aws:s3:::"; then
+  # Use the commit ID as a fallback if branch information is unavailable
+  BRANCH="commit-$(basename "$CODEBUILD_SOURCE_VERSION")"
+elif echo "$CODEBUILD_SOURCE_VERSION" | grep -q "refs/heads/"; then
+  BRANCH=$(echo "$CODEBUILD_SOURCE_VERSION" | sed 's|refs/heads/||')
 fi
 
 # Determine the STAGE based on the branch name
