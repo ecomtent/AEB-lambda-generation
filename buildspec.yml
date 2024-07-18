@@ -7,13 +7,19 @@ phases:
       python: 3.9
     commands:
       - echo "Using custom Docker image with AWS SAM CLI"
+      - if [ -f "package.json" ]; then npm install; fi
+      - if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
   build:
     commands:
+      - echo "Building the SAM application"
       - sam build
   post_build:
     commands:
+      - echo "Packaging the SAM application"
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
-      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM --parameter-overrides StageName=dev
+      - echo "Deploying the SAM application"
+      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=dev
 artifacts:
   files:
     - packaged.yaml
+
