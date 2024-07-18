@@ -33,9 +33,12 @@ Resources:
             Path: '/function2'
             Method: 'get'
 
-  ApiGatewayStage:
-    Type: 'AWS::ApiGateway::Stage'
+  ServerlessRestApi:
+    Type: 'AWS::Serverless::Api'
     Properties:
-      DeploymentId: !Ref ServerlessRestApiDeployment
-      RestApiId: !Ref ServerlessRestApi
       StageName: !Ref StageName
+
+Outputs:
+  ApiGatewayUrl:
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+    Description: "URL for API Gateway"
