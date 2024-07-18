@@ -31,8 +31,10 @@ phases:
     commands:
       - echo "Packaging the SAM application"
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
-      - echo "Deploying the SAM application"
-      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=$STAGE
 artifacts:
   files:
     - packaged.yaml
+deploy:
+  commands:
+    - echo "Deploying the SAM application"
+    - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=$STAGE
