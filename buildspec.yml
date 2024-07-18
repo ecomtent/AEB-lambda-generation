@@ -9,6 +9,7 @@ phases:
       - echo "Using custom Docker image with AWS SAM CLI"
       - if [ -f "package.json" ]; then npm install; fi
       - if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
   pre_build:
     commands:
       - echo "Detecting branch"
@@ -23,14 +24,17 @@ phases:
           export STAGE=Dev
         fi
       - echo "Stage: $STAGE"
+
   build:
     commands:
       - echo "Building the SAM application"
       - sam build
+
   post_build:
     commands:
       - echo "Packaging the SAM application"
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
+
 artifacts:
   files:
     - packaged.yaml
