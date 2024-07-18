@@ -14,7 +14,7 @@ phases:
     commands:
       - echo "Detecting branch"
       - chmod +x detect_branch.sh
-      - source ./detect_branch.sh
+      - . ./detect_branch.sh  # Use '.' instead of 'source' for compatibility
       - echo "Stage: $STAGE"
 
   build:
@@ -27,7 +27,7 @@ phases:
       - echo "Packaging the SAM application"
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
       - echo "Deploying the SAM application"
-      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack-${STAGE} --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides ParameterKey=StageName,ParameterValue=${STAGE}
+      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack-${STAGE} --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=${STAGE}
 
 artifacts:
   files:
