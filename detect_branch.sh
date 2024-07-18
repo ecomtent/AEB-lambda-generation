@@ -25,6 +25,8 @@ elif [ -n "$CODEBUILD_WEBHOOK_HEAD_REF" ]; then
   BRANCH=$(echo "$CODEBUILD_WEBHOOK_HEAD_REF" | sed 's|refs/heads/||')
 elif echo "$CODEBUILD_SOURCE_VERSION" | grep -q "refs/heads/"; then
   BRANCH=$(echo "$CODEBUILD_SOURCE_VERSION" | sed 's|refs/heads/||')
+elif [ -n "$CODEBUILD_SOURCE_VERSION" ] && [ -z "$(echo "$CODEBUILD_SOURCE_VERSION" | grep '^arn:')" ]; then
+  BRANCH=$(echo "$CODEBUILD_SOURCE_VERSION" | sed 's|refs/heads/||')
 elif [ -n "$CODEBUILD_RESOLVED_SOURCE_VERSION" ]; then
   BRANCH="$CODEBUILD_RESOLVED_SOURCE_VERSION"
 fi
