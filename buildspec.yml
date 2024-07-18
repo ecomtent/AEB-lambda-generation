@@ -12,7 +12,7 @@ phases:
   pre_build:
     commands:
       - echo "Detecting branch"
-      - >
+      - |
         if [[ "$CODEBUILD_SOURCE_VERSION" == "refs/heads/main" ]]; then
           export STAGE=Prod
         elif [[ "$CODEBUILD_SOURCE_VERSION" == "refs/heads/staging" ]]; then
@@ -34,7 +34,5 @@ phases:
 artifacts:
   files:
     - packaged.yaml
-deploy:
-  commands:
-    - echo "Deploying the SAM application"
     - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=$STAGE
+  discard-paths: yes
