@@ -20,12 +20,17 @@ if [ -n "$CODEBUILD_WEBHOOK_TRIGGER" ]; then
   elif [ "$TRIGGER_TYPE" = "tag" ]; then
     BRANCH="tag"
   fi
+elif echo "$CODEBUILD_SOURCE_VERSION" | grep -q "arn:aws:s3:::"; then
+  # Handle S3 ARN in CODEBUILD_SOURCE_VERSION
+  if [ -n "$CODEBUILD_SOURCE_REPO_URL" ]; then
+    BRANCH=$(echo "$CODEBUILD_SOURCE_REPO_URL" | awk -F'/' '{print $NF}')
+  else
+    BRANCH="unknown"
+  fi
 else
   # Fallback to checking CODEBUILD_SOURCE_VERSION for branch
   if echo "$CODEBUILD_SOURCE_VERSION" | grep -q "refs/heads/"; then
     BRANCH=$(echo "$CODEBUILD_SOURCE_VERSION" | sed 's|refs/heads/||')
-  elif [ -n "$CODEBUILD_SOURCE_REPO_URL" ]; then
-    BRANCH=$(echo "$CODEBUILD_SOURCE_REPO_URL" | awk -F'/' '{print $NF}')
   fi
 fi
 
