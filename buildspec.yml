@@ -14,8 +14,7 @@ phases:
     commands:
       - echo "Detecting branch"
       - chmod +x detect_branch.sh
-      - . ./detect_branch.sh  # Use '.' instead of 'source' for compatibility
-      - echo "Stage: $STAGE"
+      - . ./detect_branch.sh  # Ensure this line is properly formatted and sourced
 
   build:
     commands:
