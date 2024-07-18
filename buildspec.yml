@@ -34,5 +34,4 @@ phases:
 artifacts:
   files:
     - packaged.yaml
-    - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=$STAGE
   discard-paths: yes
