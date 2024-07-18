@@ -11,7 +11,7 @@ echo "CODEBUILD_SOURCE_VERSION: $CODEBUILD_SOURCE_VERSION"
 echo "CODEBUILD_RESOLVED_SOURCE_VERSION: $CODEBUILD_RESOLVED_SOURCE_VERSION"
 echo "CODEBUILD_SOURCE_REPO_URL: $CODEBUILD_SOURCE_REPO_URL"
 
-# Check if the branch name is available via webhook trigger
+# Determine the branch from CODEBUILD_WEBHOOK_TRIGGER if available
 if [ -n "$CODEBUILD_WEBHOOK_TRIGGER" ]; then
   TRIGGER_TYPE=$(echo "$CODEBUILD_WEBHOOK_TRIGGER" | cut -d'/' -f1)
   if [ "$TRIGGER_TYPE" = "branch" ]; then
@@ -21,11 +21,12 @@ if [ -n "$CODEBUILD_WEBHOOK_TRIGGER" ]; then
   elif [ "$TRIGGER_TYPE" = "tag" ]; then
     BRANCH="tag"
   fi
-elif [ -n "$CODEBUILD_RESOLVED_SOURCE_VERSION" ]; then
-  # Use the resolved source version provided by CodePipeline
-  BRANCH="$CODEBUILD_RESOLVED_SOURCE_VERSION"
+elif [ -n "$CODEBUILD_WEBHOOK_HEAD_REF" ]; then
+  BRANCH=$(echo "$CODEBUILD_WEBHOOK_HEAD_REF" | sed 's|refs/heads/||')
 elif echo "$CODEBUILD_SOURCE_VERSION" | grep -q "refs/heads/"; then
   BRANCH=$(echo "$CODEBUILD_SOURCE_VERSION" | sed 's|refs/heads/||')
+elif [ -n "$CODEBUILD_RESOLVED_SOURCE_VERSION" ]; then
+  BRANCH="$CODEBUILD_RESOLVED_SOURCE_VERSION"
 fi
 
 # Determine the STAGE based on the branch name
