@@ -10,7 +10,7 @@ phases:
   post_build:
     commands:
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
-      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM --parameter-overrides StageName=$STAGE
+      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM --parameter-overrides StageName=dev
 artifacts:
   files:
     - packaged.yaml
