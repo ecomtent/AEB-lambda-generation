@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y \
 # Set timezone to avoid interactive configuration
 RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && dpkg-reconfigure --frontend noninteractive tzdata
 
-# Install Node.js 14
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+# Install Node.js 18
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
 # Install AWS CLI v2
