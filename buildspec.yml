@@ -9,6 +9,20 @@ phases:
       - echo "Using custom Docker image with AWS SAM CLI"
       - if [ -f "package.json" ]; then npm install; fi
       - if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+  pre_build:
+    commands:
+      - echo "Detecting branch"
+      - |
+        if [[ "$CODEBUILD_SOURCE_VERSION" == "refs/heads/main" ]]; then
+          export STAGE=Prod
+        elif [[ "$CODEBUILD_SOURCE_VERSION" == "refs/heads/staging" ]]; then
+          export STAGE=Stage
+        elif [[ "$CODEBUILD_SOURCE_VERSION" == refs/heads/feature-* ]]; then
+          export STAGE=Feat-${CODEBUILD_SOURCE_VERSION#refs/heads/feature-}
+        else
+          export STAGE=Dev
+        fi
+      - echo "Stage: $STAGE"
   build:
     commands:
       - echo "Building the SAM application"
@@ -18,7 +32,7 @@ phases:
       - echo "Packaging the SAM application"
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
       - echo "Deploying the SAM application"
-      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=dev
+      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=$STAGE
 artifacts:
   files:
     - packaged.yaml

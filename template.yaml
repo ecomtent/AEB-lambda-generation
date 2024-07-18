@@ -1,26 +1,41 @@
 AWSTemplateFormatVersion: '2010-09-09'
-
 Transform: 'AWS::Serverless-2016-10-31'
+
+Parameters:
+  StageName:
+    Type: String
+    Description: The stage name for the deployment
+
 Resources:
   Function1:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: 'src/function1/index.handler'
       Runtime: 'nodejs18.x'
+      FunctionName: !Sub 'Function1-${StageName}'
       Events:
         ApiGateway:
           Type: 'Api'
           Properties:
             Path: '/function1'
             Method: 'get'
+
   Function2:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: 'src/function2/index.handler'
       Runtime: 'nodejs18.x'
+      FunctionName: !Sub 'Function2-${StageName}'
       Events:
         ApiGateway:
           Type: 'Api'
           Properties:
             Path: '/function2'
             Method: 'get'
+
+  ApiGatewayStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      DeploymentId: !Ref ServerlessRestApiDeployment
+      RestApiId: !Ref ServerlessRestApi
+      StageName: !Ref StageName
