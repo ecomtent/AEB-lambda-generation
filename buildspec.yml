@@ -1,20 +1,23 @@
 version: 0.2
-
 phases:
   install:
     runtime-versions:
       nodejs: 18
       python: 3.9
-    commands:
-      - echo "Using custom Docker image with AWS SAM CLI"
-      - if [ -f "package.json" ]; then npm install; fi
-      - if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
-
   pre_build:
     commands:
-      - echo "Detecting branch"
-      - chmod +x detect_branch.sh
-      - . ./detect_branch.sh
+      - echo "Branch name is $BRANCH_NAME"
+      - |
+        if [ "$BRANCH_NAME" = "main" ]; then
+          export STAGE=Prod
+        elif [ "$BRANCH_NAME" = "staging" ]; then
+          export STAGE=Stage
+        elif [[ "$BRANCH_NAME" == feature-* ]]; then
+          export STAGE=Feat-${BRANCH_NAME#feature-}
+        else
+          export STAGE=Dev
+        fi
+      - echo "Stage is $STAGE"
 
   build:
     commands:
