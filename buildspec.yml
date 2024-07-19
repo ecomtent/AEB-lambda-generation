@@ -9,29 +9,19 @@ phases:
       - echo "Branch name is $BRANCH_NAME"
       - |
         if [ "$BRANCH_NAME" = "main" ]; then
-          export STAGE=Prod
+          export STAGE=prod
         elif [ "$BRANCH_NAME" = "staging" ]; then
-          export STAGE=Stage
-        elif [[ "$BRANCH_NAME" == feature-* ]]; then
-          export STAGE=Feat-${BRANCH_NAME#feature-}
+          export STAGE=stage
         else
-          export STAGE=Dev
+          export STAGE=$BRANCH_NAME
         fi
       - echo "Stage is $STAGE"
-
   build:
     commands:
       - echo "Building the SAM application"
       - sam build
-
-  post_build:
-    commands:
       - echo "Packaging the SAM application"
       - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
-      - echo "Deploying the SAM application"
-      - sam deploy --template-file packaged.yaml --stack-name AEBLambdaTemplateStack-${STAGE} --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides StageName=${STAGE}
-
 artifacts:
   files:
     - packaged.yaml
-  discard-paths: yes
