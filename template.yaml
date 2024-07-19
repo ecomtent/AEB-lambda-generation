@@ -18,7 +18,7 @@ Resources:
     Properties:
       Handler: index.handler
       Runtime: nodejs18.x
-      CodeUri: ./lambdas/function1
+      CodeUri: ./src/function1
       AutoPublishAlias: !Ref StageName
       Events:
         ApiEvent:
@@ -33,7 +33,7 @@ Resources:
     Properties:
       Handler: index.handler
       Runtime: nodejs18.x
-      CodeUri: ./lambdas/function2
+      CodeUri: ./src/function2
       AutoPublishAlias: !Ref StageName
       Events:
         ApiEvent:
