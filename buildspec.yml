@@ -12,8 +12,10 @@ phases:
           export STAGE=prod
         elif [ "$BRANCH_NAME" = "staging" ]; then
           export STAGE=stage
+        elif [[ "$BRANCH_NAME" == feature-* ]]; then
+          export STAGE=feat-${BRANCH_NAME#feature-}
         else
-          export STAGE=$BRANCH_NAME
+          export STAGE=dev
         fi
       - echo "Stage is $STAGE"
   build:
