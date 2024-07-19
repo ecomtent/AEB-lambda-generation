@@ -8,11 +8,12 @@ phases:
   build:
     commands:
       - echo "Building the project"
+      - echo "Branch name is $BRANCH_NAME"
       - sam build
   post_build:
     commands:
       - echo "Packaging the application"
-      - sam package --s3-bucket your-artifact-bucket-name --output-template-file packaged.yaml
+      - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged.yaml
 
 artifacts:
   files:
