@@ -40,48 +40,23 @@ Resources:
     Properties:
       StageName: !Ref StageName
       EndpointConfiguration: REGIONAL
-
-  Function1ApiResource:
-    Type: 'AWS::ApiGateway::Resource'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ParentId: !GetAtt ApiGateway.RootResourceId
-      PathPart: 'function1'
-
-  Function1ApiMethod:
-    Type: 'AWS::ApiGateway::Method'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ResourceId: !Ref Function1ApiResource
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub 
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
-          - FunctionArn: !GetAtt Function1.Arn
-
-  Function2ApiResource:
-    Type: 'AWS::ApiGateway::Resource'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ParentId: !GetAtt ApiGateway.RootResourceId
-      PathPart: 'function2'
-
-  Function2ApiMethod:
-    Type: 'AWS::ApiGateway::Method'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ResourceId: !Ref Function2ApiResource
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub 
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
-          - FunctionArn: !GetAtt Function2.Arn
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: !Ref 'AWS::StackName'
+        paths:
+          /function1:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function1.Arn}/invocations
+          /function2:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function2.Arn}/invocations
 
   Function1Permission:
     Type: 'AWS::Lambda::Permission'
