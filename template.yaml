@@ -53,7 +53,7 @@ Resources:
       RestApiId: 
         Fn::ImportValue: AEBApiGatewayId
       ResourceId: !Ref Function1ApiResource
-      HttpMethod: ANY
+      HttpMethod: GET
       AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
@@ -77,7 +77,7 @@ Resources:
       RestApiId: 
         Fn::ImportValue: AEBApiGatewayId
       ResourceId: !Ref Function2ApiResource
-      HttpMethod: ANY
+      HttpMethod: GET
       AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
