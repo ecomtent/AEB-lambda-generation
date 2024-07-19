@@ -31,12 +31,12 @@ Resources:
 
   ApiGatewayDeployment:
     Type: 'AWS::ApiGateway::Deployment'
+    DependsOn:
+      - Function1ApiMethod
+      - Function2ApiMethod
     Properties:
       RestApiId: 
         Fn::ImportValue: AEBApiGatewayId
-    DependsOn:
-      - Function1ApiResource
-      - Function2ApiResource
 
   Function1ApiResource:
     Type: 'AWS::ApiGateway::Resource'
@@ -85,6 +85,28 @@ Resources:
         Uri: !Sub 
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
           - FunctionArn: !GetAtt Function2.Arn
+
+  Function1Permission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref Function1
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*
+        - ApiId:
+            Fn::ImportValue: AEBApiGatewayId
+
+  Function2Permission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref Function2
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*
+        - ApiId:
+            Fn::ImportValue: AEBApiGatewayId
 
 Outputs:
   ApiGatewayUrl:
