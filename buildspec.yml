@@ -9,17 +9,15 @@ phases:
     commands:
       - echo "Building the project"
       - echo "Branch name is $BRANCH_NAME"
-      - sam build --template serverless.yaml
+      - sam build -t lambda_functions.yaml
   post_build:
     commands:
       - echo "Packaging the application"
-      - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged.yaml
-      - cp api-gateway.yaml packaged-api-gateway.yaml
+      - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged_lambda_functions.yaml
 
 artifacts:
   files:
-    - packaged.yaml
-    - packaged-api-gateway.yaml
+    - packaged_lambda_functions.yaml
 
 env:
   exported-variables:
