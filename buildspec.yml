@@ -12,7 +12,7 @@ phases:
   post_build:
     commands:
       - echo "Packaging the application"
-      - sam package --s3-bucket your-artifact-bucket-name --output-template-file packaged.yaml
+      - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged.yaml
 
 artifacts:
   files:
