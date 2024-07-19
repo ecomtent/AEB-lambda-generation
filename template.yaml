@@ -13,6 +13,13 @@ Resources:
       Handler: 'src/function1/index.handler'
       Runtime: 'nodejs18.x'
       FunctionName: !Sub 'Function1-${StageName}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /function1
+            Method: ANY
+            RestApiId: !Ref ApiGateway
 
   Function2:
     Type: 'AWS::Serverless::Function'
@@ -20,6 +27,13 @@ Resources:
       Handler: 'src/function2/index.handler'
       Runtime: 'nodejs18.x'
       FunctionName: !Sub 'Function2-${StageName}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /function2
+            Method: ANY
+            RestApiId: !Ref ApiGateway
 
   ApiGateway:
     Type: 'AWS::Serverless::Api'
@@ -28,45 +42,6 @@ Resources:
       EndpointConfiguration: REGIONAL
       Variables: 
         STAGE_NAME: !Ref StageName
-
-  ApiGatewayStage:
-    Type: 'AWS::ApiGateway::Stage'
-    Properties:
-      StageName: !Ref StageName
-      RestApiId: !Ref ApiGateway
-      DeploymentId: !Ref ApiGatewayDeployment
-
-  ApiGatewayDeployment:
-    Type: 'AWS::ApiGateway::Deployment'
-    DependsOn:
-      - Function1ApiGatewayAny
-      - Function2ApiGatewayAny
-    Properties:
-      RestApiId: !Ref ApiGateway
-
-  Function1ApiGatewayAny:
-    Type: 'AWS::ApiGateway::Method'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ResourceId: !GetAtt ApiGateway.RootResourceId
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function1.Arn}/invocations'
-
-  Function2ApiGatewayAny:
-    Type: 'AWS::ApiGateway::Method'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ResourceId: !GetAtt ApiGateway.RootResourceId
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function2.Arn}/invocations'
 
 Outputs:
   ApiGatewayUrl:
