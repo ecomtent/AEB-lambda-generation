@@ -12,10 +12,10 @@ Outputs:
     Description: ID of the shared API Gateway
     Value: !Ref SharedApiGateway
     Export:
-      Name: AEB-ApiGateway-Id
+      Name: AEBApiGatewayId
 
   ApiGatewayRootResourceId:
     Description: Root Resource ID of the shared API Gateway
     Value: !GetAtt SharedApiGateway.RootResourceId
     Export:
-      Name: AEB-ApiGateway-RootResourceId
+      Name: AEBApiGatewayRootResourceId
