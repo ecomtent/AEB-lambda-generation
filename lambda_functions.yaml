@@ -5,6 +5,9 @@ Parameters:
   StageName:
     Type: String
     Description: The stage name for the deployment (e.g., main, staging, feature-*)
+  SharedApiId:
+    Type: String
+    Description: The ID of the shared API Gateway
 
 Resources:
   Function1:
@@ -18,8 +21,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            RestApiId: 
-              Fn::ImportValue: SharedApiGatewayId
+            RestApiId: !Ref SharedApiId
             Path: /function1
             Method: GET
 
@@ -34,8 +36,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            RestApiId: 
-              Fn::ImportValue: SharedApiGatewayId
+            RestApiId: !Ref SharedApiId
             Path: /function2
             Method: GET
 

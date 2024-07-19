@@ -9,6 +9,7 @@ phases:
     commands:
       - echo "Building the project"
       - echo "Branch name is $BRANCH_NAME"
+      - export SHARED_API_ID=$(aws cloudformation describe-stacks --stack-name AEB-api-gateway-stack --query "Stacks[0].Outputs[?OutputKey=='ApiId'].OutputValue" --output text)
       - sam build -t lambda_functions.yaml
   post_build:
     commands:
@@ -22,3 +23,4 @@ artifacts:
 env:
   exported-variables:
     - BRANCH_NAME
+    - SHARED_API_ID
