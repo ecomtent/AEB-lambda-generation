@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Shared API Gateway
+
+Resources:
+  SharedApiGateway:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: AEB-Shared-API-Gateway
+
+Outputs:
+  ApiGatewayId:
+    Description: ID of the shared API Gateway
+    Value: !Ref SharedApiGateway
+    Export:
+      Name: AEB-ApiGateway-Id
+
+  ApiGatewayRootResourceId:
+    Description: Root Resource ID of the shared API Gateway
+    Value: !GetAtt SharedApiGateway.RootResourceId
+    Export:
+      Name: AEB-ApiGateway-RootResourceId

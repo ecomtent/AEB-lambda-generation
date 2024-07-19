@@ -13,13 +13,6 @@ Resources:
       Handler: 'src/function1/index.handler'
       Runtime: 'nodejs18.x'
       FunctionName: !Sub 'Function1-${StageName}'
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /function1
-            Method: ANY
-            RestApiId: !Ref ApiGateway
 
   Function2:
     Type: 'AWS::Serverless::Function'
@@ -27,23 +20,73 @@ Resources:
       Handler: 'src/function2/index.handler'
       Runtime: 'nodejs18.x'
       FunctionName: !Sub 'Function2-${StageName}'
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /function2
-            Method: ANY
-            RestApiId: !Ref ApiGateway
 
-  ApiGateway:
-    Type: 'AWS::Serverless::Api'
+  ApiGatewayStage:
+    Type: 'AWS::ApiGateway::Stage'
     Properties:
       StageName: !Ref StageName
-      EndpointConfiguration: REGIONAL
-      Variables: 
-        STAGE_NAME: !Ref StageName
+      RestApiId: 
+        Fn::ImportValue: AEB-ApiGateway-Id
+      DeploymentId: !Ref ApiGatewayDeployment
+
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: 
+        Fn::ImportValue: AEB-ApiGateway-Id
+    DependsOn:
+      - Function1ApiResource
+      - Function2ApiResource
+
+  Function1ApiResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: 
+        Fn::ImportValue: AEB-ApiGateway-Id
+      ParentId: 
+        Fn::ImportValue: AEB-ApiGateway-RootResourceId
+      PathPart: 'function1'
+
+  Function1ApiMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: 
+        Fn::ImportValue: AEB-ApiGateway-Id
+      ResourceId: !Ref Function1ApiResource
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+          - FunctionArn: !GetAtt Function1.Arn
+
+  Function2ApiResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: 
+        Fn::ImportValue: AEB-ApiGateway-Id
+      ParentId: 
+        Fn::ImportValue: AEB-ApiGateway-RootResourceId
+      PathPart: 'function2'
+
+  Function2ApiMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: 
+        Fn::ImportValue: AEB-ApiGateway-Id
+      ResourceId: !Ref Function2ApiResource
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+          - FunctionArn: !GetAtt Function2.Arn
 
 Outputs:
   ApiGatewayUrl:
-    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+    Value: !Sub "https://${AEB-ApiGateway-Id}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
     Description: "URL for API Gateway"
