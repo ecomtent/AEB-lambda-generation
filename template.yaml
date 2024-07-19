@@ -10,6 +10,7 @@ Resources:
   SharedApiGateway:
     Type: 'AWS::Serverless::Api'
     Properties:
+      Name: 'SharedApiGateway'
       StageName: !Ref StageName
       EndpointConfiguration: REGIONAL
 
