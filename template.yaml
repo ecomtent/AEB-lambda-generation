@@ -45,7 +45,7 @@ Resources:
         Fn::ImportValue: AEBApiGatewayId
       ParentId: 
         Fn::ImportValue: AEBApiGatewayRootResourceId
-      PathPart: 'function1'
+      PathPart: !Sub '${StageName}-function1'
 
   Function1ApiMethod:
     Type: 'AWS::ApiGateway::Method'
@@ -69,7 +69,7 @@ Resources:
         Fn::ImportValue: AEBApiGatewayId
       ParentId: 
         Fn::ImportValue: AEBApiGatewayRootResourceId
-      PathPart: 'function2'
+      PathPart: !Sub '${StageName}-function2'
 
   Function2ApiMethod:
     Type: 'AWS::ApiGateway::Method'
@@ -93,7 +93,7 @@ Resources:
       FunctionName: !Ref Function1
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 
-        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*
+        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/${StageName}-function1/*
         - ApiId:
             Fn::ImportValue: AEBApiGatewayId
 
@@ -104,7 +104,7 @@ Resources:
       FunctionName: !Ref Function2
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 
-        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*
+        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/${StageName}-function2/*
         - ApiId:
             Fn::ImportValue: AEBApiGatewayId
 
