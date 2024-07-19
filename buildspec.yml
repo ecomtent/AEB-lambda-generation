@@ -1,29 +1,19 @@
 version: 0.2
+
 phases:
   install:
     runtime-versions:
       nodejs: 18
       python: 3.9
-  pre_build:
-    commands:
-      - echo "Branch name is $BRANCH_NAME"
-      - |
-        if [ "$BRANCH_NAME" = "main" ]; then
-          export STAGE=prod
-        elif [ "$BRANCH_NAME" = "staging" ]; then
-          export STAGE=stage
-        elif [[ "$BRANCH_NAME" == feature-* ]]; then
-          export STAGE=feat-${BRANCH_NAME#feature-}
-        else
-          export STAGE=dev
-        fi
-      - echo "Stage is $STAGE"
   build:
     commands:
-      - echo "Building the SAM application"
+      - echo "Building the project"
       - sam build
-      - echo "Packaging the SAM application"
-      - sam package --output-template-file packaged.yaml --s3-bucket aeb-lambda-template-bucket
+  post_build:
+    commands:
+      - echo "Packaging the application"
+      - sam package --s3-bucket your-artifact-bucket-name --output-template-file packaged.yaml
+
 artifacts:
   files:
     - packaged.yaml
