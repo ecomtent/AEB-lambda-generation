@@ -41,8 +41,8 @@ Resources:
 
 Outputs:
   Function1Arn:
-    Value: !GetAtt [Function1, Arn]
+    Value: !GetAtt Function1.Arn
     Description: "ARN of Function1"
   Function2Arn:
-    Value: !GetAtt [Function2, Arn]
+    Value: !GetAtt Function2.Arn
     Description: "ARN of Function2"

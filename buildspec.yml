@@ -13,7 +13,7 @@ phases:
   post_build:
     commands:
       - echo "Packaging the application"
-      - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged_lambda_functions.yaml
+      - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged_lambda_functions.yaml --template-file .aws-sam/build/template.yaml
 
 artifacts:
   files:
