@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: API Gateway Stage
+
+Parameters:
+  StageName:
+    Type: String
+  ApiGatewayId:
+    Type: String
+  Function1Arn:
+    Type: String
+  Function2Arn:
+    Type: String
+
+Resources:
+  ApiGatewayStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      StageName: !Ref StageName
+      RestApiId: !Ref ApiGatewayId
+      DeploymentId: !Ref ApiGatewayDeployment
+
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref ApiGatewayId
+
+  Function1Integration:
+    Type: 'AWS::ApiGateway::Integration'
+    Properties:
+      RestApiId: !Ref ApiGatewayId
+      ResourceId: !Ref Function1Resource
+      HttpMethod: GET
+      Type: AWS_PROXY
+      IntegrationHttpMethod: POST
+      Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function1Arn}/invocations'
+
+  Function2Integration:
+    Type: 'AWS::ApiGateway::Integration'
+    Properties:
+      RestApiId: !Ref ApiGatewayId
+      ResourceId: !Ref Function2Resource
+      HttpMethod: GET
+      Type: AWS_PROXY
+      IntegrationHttpMethod: POST
+      Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function2Arn}/invocations'
+
+  Function1Resource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref ApiGatewayId
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'function1'
+
+  Function2Resource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref ApiGatewayId
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'function2'
