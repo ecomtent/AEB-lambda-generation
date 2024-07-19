@@ -5,29 +5,11 @@ Parameters:
   StageName:
     Type: String
     Description: The stage name for the deployment (e.g., main, staging, feature-*)
+  ApiGatewayId:
+    Type: String
+    Description: The ID of the existing API Gateway
 
 Resources:
-  SharedApiGateway:
-    Type: 'AWS::Serverless::Api'
-    Properties:
-      StageName: 'dummy'  # We'll create actual stages separately
-      EndpointConfiguration: REGIONAL
-
-  ApiGatewayStage:
-    Type: 'AWS::ApiGateway::Stage'
-    Properties:
-      DeploymentId: !Ref SharedApiGatewayDeployment
-      RestApiId: !Ref SharedApiGateway
-      StageName: !Ref StageName
-
-  SharedApiGatewayDeployment:
-    Type: 'AWS::ApiGateway::Deployment'
-    DependsOn: 
-      - Function1ApiEvent
-      - Function2ApiEvent
-    Properties:
-      RestApiId: !Ref SharedApiGateway
-
   Function1:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -39,7 +21,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref SharedApiGateway
+            RestApiId: !Ref ApiGatewayId
             Path: /function1
             Method: GET
 
@@ -54,42 +36,11 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref SharedApiGateway
+            RestApiId: !Ref ApiGatewayId
             Path: /function2
             Method: GET
 
-  Function1ApiEvent:
-    Type: 'AWS::ApiGateway::Method'
-    Properties:
-      RestApiId: !Ref SharedApiGateway
-      ResourceId: !GetAtt SharedApiGateway.RootResourceId
-      HttpMethod: GET
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub 
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}:${StageName}/invocations
-          - FunctionArn: !GetAtt Function1.Arn
-
-  Function2ApiEvent:
-    Type: 'AWS::ApiGateway::Method'
-    Properties:
-      RestApiId: !Ref SharedApiGateway
-      ResourceId: !GetAtt SharedApiGateway.RootResourceId
-      HttpMethod: GET
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub 
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}:${StageName}/invocations
-          - FunctionArn: !GetAtt Function2.Arn
-
 Outputs:
-  ApiGatewayUrl:
-    Value: !Sub 'https://${SharedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/'
-    Description: "URL for API Gateway"
   Function1Arn:
     Value: !GetAtt [Function1, Arn]
     Description: "ARN of Function1"
