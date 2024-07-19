@@ -9,7 +9,7 @@ phases:
     commands:
       - echo "Building the project"
       - echo "Branch name is $BRANCH_NAME"
-      - sam build
+      - sam build --parameter-overrides "StageName=$BRANCH_NAME ApiGatewayId=$API_GATEWAY_ID"
   post_build:
     commands:
       - echo "Packaging the application"
@@ -20,5 +20,8 @@ artifacts:
     - packaged.yaml
 
 env:
+  variables:
+    API_GATEWAY_ID: "80o3umtsj3"
   exported-variables:
     - BRANCH_NAME
+    - API_GATEWAY_ID
