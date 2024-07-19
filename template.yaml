@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  StageName:
+    Type: String
+    Description: The stage name for the deployment (e.g., main, staging, feature-*)
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs18.x
+
+Resources:
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+
+  Function1:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/function1/
+      Handler: index.handler
+      Events:
+        HttpApi:
+          Type: Api
+          Properties:
+            Path: /function1
+            Method: get
+            RestApiId: !Ref ApiGateway
+
+  Function2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/function2/
+      Handler: index.handler
+      Events:
+        HttpApi:
+          Type: Api
+          Properties:
+            Path: /function2
+            Method: get
+            RestApiId: !Ref ApiGateway
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+  Function1Arn:
+    Description: Function1 ARN
+    Value: !GetAtt Function1.Arn
+  Function2Arn:
+    Description: Function2 ARN
+    Value: !GetAtt Function2.Arn

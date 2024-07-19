@@ -8,19 +8,16 @@ phases:
   build:
     commands:
       - echo "Building the project"
-      - echo "Branch name is $BRANCH_NAME"
-      - export SHARED_API_ID=$(aws cloudformation describe-stacks --stack-name AEB-api-gateway-stack --query "Stacks[0].Outputs[?OutputKey=='ApiId'].OutputValue" --output text)
-      - sam build -t lambda_functions.yaml
+      - sam build
   post_build:
     commands:
       - echo "Packaging the application"
-      - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged_lambda_functions.yaml --template-file .aws-sam/build/template.yaml
+      - sam package --s3-bucket your-artifact-bucket-name --output-template-file packaged.yaml
 
 artifacts:
   files:
-    - packaged_lambda_functions.yaml
+    - packaged.yaml
 
 env:
   exported-variables:
     - BRANCH_NAME
-    - SHARED_API_ID
