@@ -9,19 +9,18 @@ phases:
     commands:
       - echo "Building the project"
       - echo "Branch name is $BRANCH_NAME"
-      - sam build --parameter-overrides "StageName=$BRANCH_NAME ApiGatewayId=$API_GATEWAY_ID"
+      - sam build --template serverless.yaml
   post_build:
     commands:
       - echo "Packaging the application"
       - sam package --s3-bucket aeb-lambda-template-bucket --output-template-file packaged.yaml
+      - cp api-gateway.yaml packaged-api-gateway.yaml
 
 artifacts:
   files:
     - packaged.yaml
+    - packaged-api-gateway.yaml
 
 env:
-  variables:
-    API_GATEWAY_ID: "80o3umtsj3"
   exported-variables:
     - BRANCH_NAME
-    - API_GATEWAY_ID

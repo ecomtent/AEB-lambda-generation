@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'API Gateway Template'
+
+Resources:
+  SharedApiGateway:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: SharedAPIGateway
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  MainStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      DeploymentId: !Ref ApiDeployment
+      RestApiId: !Ref SharedApiGateway
+      StageName: main
+
+  StagingStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      DeploymentId: !Ref ApiDeployment
+      RestApiId: !Ref SharedApiGateway
+      StageName: staging
+
+  ApiDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    DependsOn:
+      - Function1Resource
+      - Function2Resource
+    Properties:
+      RestApiId: !Ref SharedApiGateway
+
+  Function1Resource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref SharedApiGateway
+      ParentId: !GetAtt SharedApiGateway.RootResourceId
+      PathPart: 'function1'
+
+  Function2Resource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref SharedApiGateway
+      ParentId: !GetAtt SharedApiGateway.RootResourceId
+      PathPart: 'function2'
+
+Outputs:
+  ApiId:
+    Description: API Gateway ID
+    Value: !Ref SharedApiGateway
+    Export:
+      Name: SharedApiGatewayId
