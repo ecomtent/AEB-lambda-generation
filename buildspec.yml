@@ -1,9 +1,5 @@
 version: 0.2
 
-env:
-  variables:
-    BRANCH_NAME: ${CODEBUILD_SOURCE_VERSION#refs/heads/}
-
 phases:
   install:
     runtime-versions:
