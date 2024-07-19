@@ -10,9 +10,23 @@ Resources:
   SharedApiGateway:
     Type: 'AWS::Serverless::Api'
     Properties:
-      Name: 'SharedApiGateway'
-      StageName: !Ref StageName
+      StageName: 'dummy'  # We'll create actual stages separately
       EndpointConfiguration: REGIONAL
+
+  ApiGatewayStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      DeploymentId: !Ref SharedApiGatewayDeployment
+      RestApiId: !Ref SharedApiGateway
+      StageName: !Ref StageName
+
+  SharedApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    DependsOn: 
+      - Function1ApiEvent
+      - Function2ApiEvent
+    Properties:
+      RestApiId: !Ref SharedApiGateway
 
   Function1:
     Type: 'AWS::Serverless::Function'
@@ -43,6 +57,34 @@ Resources:
             RestApiId: !Ref SharedApiGateway
             Path: /function2
             Method: GET
+
+  Function1ApiEvent:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref SharedApiGateway
+      ResourceId: !GetAtt SharedApiGateway.RootResourceId
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}:${StageName}/invocations
+          - FunctionArn: !GetAtt Function1.Arn
+
+  Function2ApiEvent:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref SharedApiGateway
+      ResourceId: !GetAtt SharedApiGateway.RootResourceId
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}:${StageName}/invocations
+          - FunctionArn: !GetAtt Function2.Arn
 
 Outputs:
   ApiGatewayUrl:
