@@ -10,50 +10,50 @@ Resources:
   Function1:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Handler: 'src/function1/index.handler'
+      Handler: 'index.handler'
       Runtime: 'nodejs18.x'
       FunctionName: !Sub 'Function1-${StageName}'
+      InlineCode: |
+        exports.handler = async (event) => {
+          return {
+            statusCode: 200,
+            body: JSON.stringify({ message: "Hello from Function1!" }),
+          };
+        };
 
   Function2:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Handler: 'src/function2/index.handler'
+      Handler: 'index.handler'
       Runtime: 'nodejs18.x'
       FunctionName: !Sub 'Function2-${StageName}'
+      InlineCode: |
+        exports.handler = async (event) => {
+          return {
+            statusCode: 200,
+            body: JSON.stringify({ message: "Hello from Function2!" }),
+          };
+        };
 
-  ApiGatewayStage:
-    Type: 'AWS::ApiGateway::Stage'
+  ApiGateway:
+    Type: 'AWS::Serverless::Api'
     Properties:
       StageName: !Ref StageName
-      RestApiId: 
-        Fn::ImportValue: AEBApiGatewayId
-      DeploymentId: !Ref ApiGatewayDeployment
-
-  ApiGatewayDeployment:
-    Type: 'AWS::ApiGateway::Deployment'
-    DependsOn:
-      - Function1ApiMethod
-      - Function2ApiMethod
-    Properties:
-      RestApiId: 
-        Fn::ImportValue: AEBApiGatewayId
+      EndpointConfiguration: REGIONAL
 
   Function1ApiResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
-      RestApiId: 
-        Fn::ImportValue: AEBApiGatewayId
-      ParentId: 
-        Fn::ImportValue: AEBApiGatewayRootResourceId
-      PathPart: !Sub '${StageName}-function1'
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'function1'
 
   Function1ApiMethod:
     Type: 'AWS::ApiGateway::Method'
     Properties:
-      RestApiId: 
-        Fn::ImportValue: AEBApiGatewayId
+      RestApiId: !Ref ApiGateway
       ResourceId: !Ref Function1ApiResource
-      HttpMethod: GET
+      HttpMethod: ANY
       AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
@@ -65,19 +65,16 @@ Resources:
   Function2ApiResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
-      RestApiId: 
-        Fn::ImportValue: AEBApiGatewayId
-      ParentId: 
-        Fn::ImportValue: AEBApiGatewayRootResourceId
-      PathPart: !Sub '${StageName}-function2'
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'function2'
 
   Function2ApiMethod:
     Type: 'AWS::ApiGateway::Method'
     Properties:
-      RestApiId: 
-        Fn::ImportValue: AEBApiGatewayId
+      RestApiId: !Ref ApiGateway
       ResourceId: !Ref Function2ApiResource
-      HttpMethod: GET
+      HttpMethod: ANY
       AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
@@ -92,10 +89,7 @@ Resources:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref Function1
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 
-        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/${StageName}-function1/*
-        - ApiId:
-            Fn::ImportValue: AEBApiGatewayId
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/${StageName}/*/function1'
 
   Function2Permission:
     Type: 'AWS::Lambda::Permission'
@@ -103,15 +97,9 @@ Resources:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref Function2
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 
-        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/${StageName}-function2/*
-        - ApiId:
-            Fn::ImportValue: AEBApiGatewayId
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/${StageName}/*/function2'
 
 Outputs:
   ApiGatewayUrl:
-    Value: !Sub 
-      - "https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
-      - ApiId: 
-          Fn::ImportValue: AEBApiGatewayId
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/'
     Description: "URL for API Gateway"
