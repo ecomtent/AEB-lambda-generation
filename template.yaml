@@ -48,8 +48,8 @@ Outputs:
     Value: !Sub 'https://${SharedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/'
     Description: "URL for API Gateway"
   Function1Arn:
-    Value: !Ref Function1.Alias
-    Description: "ARN of Function1 Alias"
+    Value: !GetAtt [Function1, Arn]
+    Description: "ARN of Function1"
   Function2Arn:
-    Value: !Ref Function2.Alias
-    Description: "ARN of Function2 Alias"
+    Value: !GetAtt [Function2, Arn]
+    Description: "ARN of Function2"
