@@ -5,11 +5,14 @@ Parameters:
   StageName:
     Type: String
     Description: The stage name for the deployment (e.g., main, staging, feature-*)
-  ApiGatewayId:
-    Type: String
-    Description: The ID of the shared API Gateway
 
 Resources:
+  SharedApiGateway:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: !Ref StageName
+      EndpointConfiguration: REGIONAL
+
   Function1:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -21,7 +24,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayId
+            RestApiId: !Ref SharedApiGateway
             Path: /function1
             Method: GET
 
@@ -36,12 +39,17 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayId
+            RestApiId: !Ref SharedApiGateway
             Path: /function2
             Method: GET
 
 Outputs:
+  ApiGatewayUrl:
+    Value: !Sub 'https://${SharedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/'
+    Description: "URL for API Gateway"
   Function1Arn:
     Value: !Ref Function1.Alias
+    Description: "ARN of Function1 Alias"
   Function2Arn:
     Value: !Ref Function2.Alias
+    Description: "ARN of Function2 Alias"
