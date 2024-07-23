@@ -51,7 +51,7 @@
                         "runOrder": 1,
                         "configuration": {
                             "ProjectName": "AEB-lambda-build-project",
-                            "EnvironmentVariables": "[{\"name\":\"BRANCH_NAME\",\"value\":\"#{SourceVariables.BranchName}\",\"type\":\"PLAINTEXT\"}]"
+                            "EnvironmentVariables": "[{\"name\":\"BRANCH_NAME\",\"value\":\"#{SourceVariables.BranchName}\",\"type\":\"PLAINTEXT\"},{\"name\":\"REPO_NAME\",\"value\":\"AEB-lambda-template\",\"type\":\"PLAINTEXT\"}]"
                         },
                         "outputArtifacts": [
                             {
@@ -84,9 +84,9 @@
                             "ActionMode": "CREATE_UPDATE",
                             "Capabilities": "CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND",
                             "RoleArn": "arn:aws:iam::466815431336:role/CodePipelineCloudFormationRole",
-                            "StackName": "#{BuildVariables.REPO_NAME}-#{SourceVariables.BranchName}",
+                            "StackName": "AEB-lambda-template-#{SourceVariables.BranchName}",
                             "TemplatePath": "BuildArtifact::packaged.yaml",
-                            "ParameterOverrides": "{\"StageName\":\"#{SourceVariables.BranchName}\",\"RepoName\":\"#{BuildVariables.REPO_NAME}\"}"
+                            "ParameterOverrides": "{\"StageName\":\"#{SourceVariables.BranchName}\",\"RepoName\":\"AEB-lambda-template\"}"
                         },
                         "outputArtifacts": [],
                         "inputArtifacts": [

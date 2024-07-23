@@ -8,7 +8,6 @@ phases:
     commands:
       - echo "Building the project"
       - echo "Branch name is $BRANCH_NAME"
-      - REPO_NAME=$(basename $CODEBUILD_SOURCE_REPO_URL .git)
       - echo "Repository name is $REPO_NAME"
       - sam build
   post_build:
@@ -18,7 +17,3 @@ phases:
 artifacts:
   files:
     - packaged.yaml
-env:
-  exported-variables:
-    - BRANCH_NAME
-    - REPO_NAME
