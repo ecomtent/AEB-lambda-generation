@@ -51,7 +51,7 @@
                         "runOrder": 1,
                         "configuration": {
                             "ProjectName": "AEB-lambda-build-project",
-                            "EnvironmentVariables": "[{\"name\":\"BRANCH_NAME\",\"value\":\"#{SourceVariables.BranchName}\",\"type\":\"PLAINTEXT\"},{\"name\":\"FULL_REPO_ID\",\"value\":\"#{SourceVariables.FullRepositoryId}\",\"type\":\"PLAINTEXT\"}]"
+                            "EnvironmentVariables": "[{\"name\":\"BRANCH_NAME\",\"value\":\"#{SourceVariables.BranchName}\",\"type\":\"PLAINTEXT\"}]"
                         },
                         "outputArtifacts": [
                             {

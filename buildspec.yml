@@ -8,8 +8,7 @@ phases:
     commands:
       - echo "Building the project"
       - echo "Branch name is $BRANCH_NAME"
-      - echo "Full repository ID is $FULL_REPO_ID"
-      - REPO_NAME=$(echo $FULL_REPO_ID | awk -F'/' '{print $NF}')
+      - REPO_NAME=$(basename $CODEBUILD_SOURCE_REPO_URL .git)
       - echo "Repository name is $REPO_NAME"
       - sam build
   post_build:
