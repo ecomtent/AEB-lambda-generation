@@ -1,3 +1,2 @@
 node_modules
-
-current-pipeline.json
+.env

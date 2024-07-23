@@ -1,0 +1,125 @@
+{
+    "pipeline": {
+        "name": "AEB-lambda-template",
+        "roleArn": "arn:aws:iam::466815431336:role/service-role/AWSCodePipelineServiceRole-us-east-1-AEB-lambda-template",
+        "artifactStore": {
+            "type": "S3",
+            "location": "codepipeline-us-east-1-952311252671"
+        },
+        "stages": [
+            {
+                "name": "Source",
+                "actions": [
+                    {
+                        "name": "Source",
+                        "actionTypeId": {
+                            "category": "Source",
+                            "owner": "AWS",
+                            "provider": "CodeStarSourceConnection",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "ConnectionArn": "arn:aws:codestar-connections:us-east-1:466815431336:connection/883f8f13-e13b-4b52-a00f-b5e4633baae4",
+                            "FullRepositoryId": "ecomtent/AEB-lambda-template",
+                            "BranchName": "*",
+                            "OutputArtifactFormat": "CODE_ZIP",
+                            "DetectChanges": "true"
+                        },
+                        "outputArtifacts": [
+                            {
+                                "name": "SourceArtifact"
+                            }
+                        ],
+                        "inputArtifacts": [],
+                        "region": "us-east-1",
+                        "namespace": "SourceVariables"
+                    }
+                ]
+            },
+            {
+                "name": "Build",
+                "actions": [
+                    {
+                        "name": "Build",
+                        "actionTypeId": {
+                            "category": "Build",
+                            "owner": "AWS",
+                            "provider": "CodeBuild",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "ProjectName": "AEB-lambda-build-project",
+                            "EnvironmentVariables": "[{\"name\":\"BRANCH_NAME\",\"value\":\"#{SourceVariables.BranchName}\",\"type\":\"PLAINTEXT\"},{\"name\":\"FULL_REPO_ID\",\"value\":\"#{SourceVariables.FullRepositoryId}\",\"type\":\"PLAINTEXT\"}]"
+                        },
+                        "outputArtifacts": [
+                            {
+                                "name": "BuildArtifact"
+                            }
+                        ],
+                        "inputArtifacts": [
+                            {
+                                "name": "SourceArtifact"
+                            }
+                        ],
+                        "region": "us-east-1",
+                        "namespace": "BuildVariables"
+                    }
+                ]
+            },
+            {
+                "name": "Deploy",
+                "actions": [
+                    {
+                        "name": "DeployStack",
+                        "actionTypeId": {
+                            "category": "Deploy",
+                            "owner": "AWS",
+                            "provider": "CloudFormation",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "ActionMode": "CREATE_UPDATE",
+                            "Capabilities": "CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND",
+                            "RoleArn": "arn:aws:iam::466815431336:role/CodePipelineCloudFormationRole",
+                            "StackName": "#{BuildVariables.REPO_NAME}-#{SourceVariables.BranchName}",
+                            "TemplatePath": "BuildArtifact::packaged.yaml",
+                            "ParameterOverrides": "{\"StageName\":\"#{SourceVariables.BranchName}\",\"RepoName\":\"#{BuildVariables.REPO_NAME}\"}"
+                        },
+                        "outputArtifacts": [],
+                        "inputArtifacts": [
+                            {
+                                "name": "BuildArtifact"
+                            }
+                        ],
+                        "region": "us-east-1"
+                    }
+                ]
+            }
+        ],
+        "version": 2,
+        "pipelineType": "V2",
+        "executionMode": "SUPERSEDED",
+        "triggers": [
+            {
+                "providerType": "CodeStarSourceConnection",
+                "gitConfiguration": {
+                    "sourceActionName": "Source",
+                    "push": [
+                        {
+                            "branches": {
+                                "includes": [
+                                    "main",
+                                    "staging",
+                                    "feature-*"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
