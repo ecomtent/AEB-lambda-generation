@@ -17,3 +17,7 @@ phases:
 artifacts:
   files:
     - packaged.yaml
+env:
+  exported-variables:
+    - BRANCH_NAME
+    - REPO_NAME
