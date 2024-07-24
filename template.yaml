@@ -20,7 +20,7 @@ Resources:
     Properties:
       StageName: !Sub "${RepoName}-${StageName}"
 
-  FunctionHellowWorldJS:
+  FunctionHelloWorldJS:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/function_hello_world_js/
