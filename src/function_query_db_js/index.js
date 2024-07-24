@@ -29,9 +29,15 @@ exports.handler = async (event) => {
             throw new Error('Item not found');
         }
 
+        // Convert sets to arrays
+        const item = data.Item;
+        if (item.users_set instanceof Set) {
+            item.users_set = Array.from(item.users_set);
+        }
+
         const response = {
             statusCode: 200,
-            body: JSON.stringify(data.Item),
+            body: JSON.stringify(item),
         };
         return response;
     } catch (error) {
