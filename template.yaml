@@ -20,29 +20,29 @@ Resources:
     Properties:
       StageName: !Sub "${RepoName}-${StageName}"
 
-  Function1:
+  FunctionHellowWorldJS:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/function1/
+      CodeUri: src/function_hello_world_js/
       Handler: index.handler
       Events:
         HttpApi:
           Type: Api
           Properties:
-            Path: /function1
+            Path: /function-hello-world-js
             Method: get
             RestApiId: !Ref ApiGateway
 
-  Function2:
+  FunctionQueryDBJS:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/function2/
+      CodeUri: src/function_query_db_js/
       Handler: index.handler
       Events:
         HttpApi:
           Type: Api
           Properties:
-            Path: /function2
+            Path: /function-query-db-js
             Method: get
             RestApiId: !Ref ApiGateway
 
@@ -50,9 +50,9 @@ Outputs:
   ApiUrl:
     Description: API Gateway endpoint URL
     Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${RepoName}-${StageName}/"
-  Function1Arn:
-    Description: Function1 ARN
-    Value: !GetAtt Function1.Arn
-  Function2Arn:
-    Description: Function2 ARN
-    Value: !GetAtt Function2.Arn
+  FunctionHelloWorldJSArn:
+    Description: FunctionHelloWorldJS ARN
+    Value: !GetAtt FunctionHelloWorldJS.Arn
+  FunctionQueryDBJSArn:
+    Description: FunctionQueryDBJS ARN
+    Value: !GetAtt FunctionQueryDBJS.Arn
