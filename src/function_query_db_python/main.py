@@ -33,17 +33,26 @@ def handler(event, context):
         logger.info(f"Queried item: {json.dumps(item)}")
         return {
             'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+            },
             'body': json.dumps(item)
         }
     except ClientError as e:
         logger.error(e.response['Error']['Message'])
         return {
             'statusCode': 500,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+            },
             'body': json.dumps('Error querying DynamoDB')
         }
     except TypeError as e:
         logger.error(str(e))
         return {
             'statusCode': 500,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+            },
             'body': json.dumps('Error processing item data')
         }
