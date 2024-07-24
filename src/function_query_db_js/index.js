@@ -6,6 +6,20 @@ const dynamoDB = DynamoDBDocumentClient.from(client);
 
 exports.handler = async (event) => {
     console.log('event:', event);
+
+    // Handle OPTIONS request for CORS
+    if (event.httpMethod === 'OPTIONS') {
+        return {
+            statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
+            body: ''
+        };
+    }
+
     const tableName = process.env.ADMIN_TABLE_NAME;
     const partition_key = 'sets';
     const sort_key = 'all_users_set';
@@ -22,7 +36,7 @@ exports.handler = async (event) => {
     try {
         const command = new GetCommand(params);
         const data = await dynamoDB.send(command);
-        
+
         console.log('Raw data from DynamoDB:', data);
 
         if (!data.Item) {
@@ -37,6 +51,9 @@ exports.handler = async (event) => {
 
         const response = {
             statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
             body: JSON.stringify(item),
         };
         return response;
@@ -44,6 +61,9 @@ exports.handler = async (event) => {
         console.error('Error:', error);
         const response = {
             statusCode: 500,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
             body: JSON.stringify({ message: 'Error querying DynamoDB', error: error.message }),
         };
         return response;
