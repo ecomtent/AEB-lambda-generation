@@ -45,9 +45,6 @@ exports.handler = async (event) => {
         console.error('Error:', error);
         const response = {
             statusCode: 500,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-            },
             body: JSON.stringify({ message: 'Error querying DynamoDB', error: error.message }),
         };
         return response;
