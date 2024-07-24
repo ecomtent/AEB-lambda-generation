@@ -26,7 +26,7 @@ Resources:
   ApiGatewayRestApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub "${RepoName}-${StageName}-api"
+      Name: !Sub "${RepoName}-${StageName}"
       StageName: !Ref StageName
       Cors:
         AllowMethods: "'OPTIONS,GET,PUT,POST,DELETE'"
@@ -58,6 +58,8 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
+      Layers:
+        - arn:aws:lambda:us-east-1:466815431336:layer:aws-sdk-v3-dynamodb-node18-layer:1
       Events:
         ApiEvent:
           Type: Api

@@ -1,28 +1,34 @@
-const AWS = require('aws-sdk');
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand } = require('@aws-sdk/lib-dynamodb');
+
+const client = new DynamoDBClient({});
+const dynamoDB = DynamoDBDocumentClient.from(client);
 
 exports.handler = async (event) => {
-    const tableName = process.env.ADMIN_TABLE_NAME; // Use the global environment variable for the table name
-    const primaryKey = 'sets'; // replace with your table's primary key attribute name
-    const primaryKeyValue = 'all_users_set'; // replace with the value you want to query
-    
+    console.log('event:', event);
+    const tableName = process.env.ADMIN_TABLE_NAME;
+    const partition_key = 'sets';
+    const sort_key = 'all_users_set';
+    console.log('tableName:', tableName);
+
     const params = {
         TableName: tableName,
         Key: {
-            [primaryKey]: primaryKeyValue
-        }
+            "data_class": partition_key,
+            "id": sort_key
+        },
     };
-    
+
     try {
-        const data = await dynamoDB.get(params).promise();
-        logger.info(`Queried item: ${JSON.stringify(data.Item)}`);
+        const command = new GetCommand(params);
+        const data = await dynamoDB.send(command);
         const response = {
             statusCode: 200,
             body: JSON.stringify(data.Item),
         };
         return response;
     } catch (error) {
-        logger.error(`Error querying DynamoDB: ${error.message}`);
+        console.error('Error:', error);
         const response = {
             statusCode: 500,
             body: JSON.stringify('Error querying DynamoDB'),

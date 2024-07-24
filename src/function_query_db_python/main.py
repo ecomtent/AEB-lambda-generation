@@ -15,11 +15,14 @@ def handler(event, context):
     
     table_name = os.environ['ADMIN_TABLE_NAME']  # Use the global environment variable for the table name
     table = dynamodb.Table(table_name)
-    primary_key = 'sets'  # replace with your table's primary key attribute name
-    primary_key_value = 'all_users_set'  # replace with the value you want to query
+    partition_key = 'sets'  # replace with your table's primary key attribute name
+    sort_key = 'all_users_set'  # replace with the value you want to query
 
     try:
-        response = table.get_item(Key={primary_key: primary_key_value})
+        response = table.get_item(Key={
+            "data_class": partition_key,
+            "id": sort_key
+        })
         item = response.get('Item', {})
         logger.info(f"Queried item: {json.dumps(item)}")
         return {
