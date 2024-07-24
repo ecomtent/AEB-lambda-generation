@@ -22,6 +22,13 @@ exports.handler = async (event) => {
     try {
         const command = new GetCommand(params);
         const data = await dynamoDB.send(command);
+        
+        console.log('Raw data from DynamoDB:', data);
+
+        if (!data.Item) {
+            throw new Error('Item not found');
+        }
+
         const response = {
             statusCode: 200,
             body: JSON.stringify(data.Item),
@@ -31,7 +38,7 @@ exports.handler = async (event) => {
         console.error('Error:', error);
         const response = {
             statusCode: 500,
-            body: JSON.stringify('Error querying DynamoDB'),
+            body: JSON.stringify({ message: 'Error querying DynamoDB', error: error.message }),
         };
         return response;
     }

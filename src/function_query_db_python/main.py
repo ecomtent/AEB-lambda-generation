@@ -24,6 +24,12 @@ def handler(event, context):
             "id": sort_key
         })
         item = response.get('Item', {})
+        
+        # Convert set to list if present in item
+        for key, value in item.items():
+            if isinstance(value, set):
+                item[key] = list(value)
+        
         logger.info(f"Queried item: {json.dumps(item)}")
         return {
             'statusCode': 200,
@@ -34,4 +40,10 @@ def handler(event, context):
         return {
             'statusCode': 500,
             'body': json.dumps('Error querying DynamoDB')
+        }
+    except TypeError as e:
+        logger.error(str(e))
+        return {
+            'statusCode': 500,
+            'body': json.dumps('Error processing item data')
         }
