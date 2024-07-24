@@ -9,50 +9,92 @@ Parameters:
     Type: String
     Description: The name of the repository
 
+Conditions:
+  IsProd: !Equals [ !Ref StageName, "main" ]
+
 Globals:
   Function:
     Timeout: 30
-    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        ADMIN_TABLE_NAME: !If 
+          - IsProd
+          - "admin_table_prod"
+          - "admin_table_dev"
 
 Resources:
-  ApiGateway:
+  ApiGatewayRestApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: !Sub "${RepoName}-${StageName}"
+      Name: !Sub "${RepoName}-${StageName}"
+      StageName: !Ref StageName
+      Cors:
+        AllowMethods: "'OPTIONS,GET,PUT,POST,DELETE'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
 
-  Function1:
+  FunctionHelloWorldJS:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/function1/
+      CodeUri: src/function_hello_world_js/
       Handler: index.handler
+      Runtime: nodejs18.x
+      Policies:
+        - AWSLambdaBasicExecutionRole
       Events:
-        HttpApi:
+        ApiEvent:
           Type: Api
           Properties:
-            Path: /function1
+            Path: /function-hello-world-js
             Method: get
-            RestApiId: !Ref ApiGateway
+            RestApiId: !Ref ApiGatewayRestApi
 
-  Function2:
+  FunctionQueryDBJS:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/function2/
+      CodeUri: src/function_query_db_js/
       Handler: index.handler
+      Runtime: nodejs18.x
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+      Layers:
+        - arn:aws:lambda:us-east-1:466815431336:layer:aws-sdk-v3-dynamodb-node18-layer:1
       Events:
-        HttpApi:
+        ApiEvent:
           Type: Api
           Properties:
-            Path: /function2
-            Method: get
-            RestApiId: !Ref ApiGateway
+            Path: /function-query-db-js
+            Method: post
+            RestApiId: !Ref ApiGatewayRestApi
+
+  FunctionQueryDBPython:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/function_query_db_python/
+      Handler: main.handler
+      Runtime: python3.9
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /function-query-db-python
+            Method: post
+            RestApiId: !Ref ApiGatewayRestApi
 
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint URL
-    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${RepoName}-${StageName}/"
-  Function1Arn:
-    Description: Function1 ARN
-    Value: !GetAtt Function1.Arn
-  Function2Arn:
-    Description: Function2 ARN
-    Value: !GetAtt Function2.Arn
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+  FunctionHelloWorldJSArn:
+    Description: FunctionHelloWorldJS ARN
+    Value: !GetAtt FunctionHelloWorldJS.Arn
+  FunctionQueryDBJSArn:
+    Description: FunctionQueryDBJS ARN
+    Value: !GetAtt FunctionQueryDBJS.Arn
+  FunctionQueryDBPythonArn:
+    Description: FunctionQueryDBPython ARN
+    Value: !GetAtt FunctionQueryDBPython.Arn
