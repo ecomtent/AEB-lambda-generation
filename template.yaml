@@ -65,7 +65,7 @@ Resources:
           Type: Api
           Properties:
             Path: /function-query-db-js
-            Method: get
+            Method: post
             RestApiId: !Ref ApiGatewayRestApi
 
   FunctionQueryDBPython:
@@ -82,7 +82,7 @@ Resources:
           Type: Api
           Properties:
             Path: /function-query-db-python
-            Method: get
+            Method: post
             RestApiId: !Ref ApiGatewayRestApi
 
 Outputs:
