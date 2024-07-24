@@ -7,19 +7,6 @@ const dynamoDB = DynamoDBDocumentClient.from(client);
 exports.handler = async (event) => {
     console.log('event:', event);
 
-    // Handle OPTIONS request for CORS
-    if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                'Access-Control-Allow-Headers': 'Content-Type'
-            },
-            body: ''
-        };
-    }
-
     const tableName = process.env.ADMIN_TABLE_NAME;
     const partition_key = 'sets';
     const sort_key = 'all_users_set';
