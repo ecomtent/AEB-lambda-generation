@@ -54,5 +54,5 @@ Example:
 For more detailed information, refer to the full documentation.
 
 ## Documentation
-- [Working with Serverless API Repository](!https://ecomtent.atlassian.net/wiki/spaces/~712020196c5fc91fbb4eb0afcd306a8fd75f7a/pages/14123023/Working+with+Serverless+API+Repository)
+- [Working with Serverless API Repository](https://ecomtent.atlassian.net/wiki/spaces/~712020196c5fc91fbb4eb0afcd306a8fd75f7a/pages/14123023/Working+with+Serverless+API+Repository)
 - [Creating a Serverless API Repository](https://ecomtent.atlassian.net/wiki/spaces/~712020196c5fc91fbb4eb0afcd306a8fd75f7a/pages/13238273/Creating+a+Serverless+API+Repository)
