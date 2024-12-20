@@ -1,7 +1,7 @@
 {
     "pipeline": {
-        "name": "AEB-lambda-template",
-        "roleArn": "arn:aws:iam::466815431336:role/service-role/AWSCodePipelineServiceRole-us-east-1-AEB-lambda-template",
+        "name": "app-ecomtent-backend-generation",
+        "roleArn": "arn:aws:iam::466815431336:role/service-role/AWSCodePipelineServiceRole-us-east-1-app-ecomtent-backend-gener",
         "artifactStore": {
             "type": "S3",
             "location": "codepipeline-us-east-1-952311252671"
@@ -21,7 +21,7 @@
                         "runOrder": 1,
                         "configuration": {
                             "ConnectionArn": "arn:aws:codestar-connections:us-east-1:466815431336:connection/883f8f13-e13b-4b52-a00f-b5e4633baae4",
-                            "FullRepositoryId": "ecomtent/AEB-lambda-template",
+                            "FullRepositoryId": "ecomtent/app-ecomtent-backend-generation",
                             "BranchName": "*",
                             "OutputArtifactFormat": "CODE_ZIP",
                             "DetectChanges": "true"
@@ -51,7 +51,7 @@
                         "runOrder": 1,
                         "configuration": {
                             "ProjectName": "AEB-lambda-build-project",
-                            "EnvironmentVariables": "[{\"name\":\"BRANCH_NAME\",\"value\":\"#{SourceVariables.BranchName}\",\"type\":\"PLAINTEXT\"},{\"name\":\"REPO_NAME\",\"value\":\"AEB-lambda-template\",\"type\":\"PLAINTEXT\"}]"
+                            "EnvironmentVariables": "[{\"name\":\"BRANCH_NAME\",\"value\":\"#{SourceVariables.BranchName}\",\"type\":\"PLAINTEXT\"},{\"name\":\"REPO_NAME\",\"value\":\"app-ecomtent-backend-generation\",\"type\":\"PLAINTEXT\"}]"
                         },
                         "outputArtifacts": [
                             {
@@ -84,9 +84,9 @@
                             "ActionMode": "CREATE_UPDATE",
                             "Capabilities": "CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND",
                             "RoleArn": "arn:aws:iam::466815431336:role/CodePipelineCloudFormationRole",
-                            "StackName": "AEB-lambda-template-#{SourceVariables.BranchName}",
+                            "StackName": "app-ecomtent-backend-generation-#{SourceVariables.BranchName}",
                             "TemplatePath": "BuildArtifact::packaged.yaml",
-                            "ParameterOverrides": "{\"StageName\":\"#{SourceVariables.BranchName}\",\"RepoName\":\"AEB-lambda-template\"}"
+                            "ParameterOverrides": "{\"StageName\":\"#{SourceVariables.BranchName}\",\"RepoName\":\"app-ecomtent-backend-generation\"}"
                         },
                         "outputArtifacts": [],
                         "inputArtifacts": [
