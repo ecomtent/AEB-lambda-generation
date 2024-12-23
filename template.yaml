@@ -7,7 +7,7 @@ Parameters:
     Description: The stage name for the deployment (e.g., main, staging, feature-*)
   RepoName:
     Type: String
-    Description: The name of the repository
+    Description: AEB-lambda-generation
 
 Conditions:
   IsProd: !Equals [ !Ref StageName, "main" ]
@@ -36,7 +36,7 @@ Resources:
   SetAplusFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/aplus_infographic/
+      CodeUri: src/generate_aplus/
       Handler: index.handler
       Runtime: nodejs18.x
       Policies:
@@ -99,23 +99,6 @@ Resources:
             Method: post
             RestApiId: !Ref ApiGatewayRestApi
 
-  FunctionQueryDBPython:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/function_query_db_python/
-      Handler: main.handler
-      Runtime: python3.9
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /function-query-db-python
-            Method: post
-            RestApiId: !Ref ApiGatewayRestApi
-
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint URL
@@ -126,6 +109,3 @@ Outputs:
   FunctionQueryDBJSArn:
     Description: FunctionQueryDBJS ARN
     Value: !GetAtt FunctionQueryDBJS.Arn
-  FunctionQueryDBPythonArn:
-    Description: FunctionQueryDBPython ARN
-    Value: !GetAtt FunctionQueryDBPython.Arn

@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
     if (!seller_id || !listing_id || !seller_email || !language ) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Bad request - missing required fields' })
+        body: JSON.stringify({ error: 'Bad request - Missing required fields' })
     };
     }
 
