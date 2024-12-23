@@ -1,10 +1,8 @@
-const express = require('express');
 const { putObjectToS3, dynamoDB } = require('../utils/aws_services');
 const { jsonToBlobs } = require('../utils/image_utils');
 const _ = require('lodash');
 const axios = require('axios');
 
-const router = express.Router();
 
 exports.handler = async (event, context) => {
   const body = JSON.parse(event.body);  
