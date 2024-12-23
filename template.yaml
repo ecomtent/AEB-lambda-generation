@@ -36,8 +36,8 @@ Resources:
   SetAplusFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/generate_aplus/
-      Handler: index.handler
+      CodeUri: ./src
+      Handler: generate_aplus/index.handler
       Runtime: nodejs18.x
       Policies:
         - AmazonDynamoDBFullAccess
