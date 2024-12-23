@@ -33,6 +33,37 @@ Resources:
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
 
+  SetAplusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/aplus_infographic/
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AWSLambdaBasicExecutionRole
+        - AmazonS3FullAccess 
+      Layers:
+        - arn:aws:lambda:us-east-1:466815431336:layer:aws-sdk-v3-dynamodb-node18-layer:1
+        - arn:aws:lambda:us-east-1:466815431336:layer:aws-sdk-s3-layer:1
+        - arn:aws:lambda:us-east-1:466815431336:layer:axios_layer:1
+        - arn:aws:lambda:us-east-1:466815431336:layer:puppeteer-core-layer:1
+        - arn:aws:lambda:us-east-1:466815431336:layer:polotno-node-layer:1
+      Environment:
+        Variables:
+          SELLER_TABLE: !If [ IsProd, seller_table_prod, seller_table_dev ]
+          LISTING_GATEWAY: !If [ IsProd, 'https://9pwyqhbwx0.execute-api.us-east-1.amazonaws.com/prod', 'https://me3zf0vzl7.execute-api.us-east-1.amazonaws.com/staging' ]
+          S3_BUCKET_URL: 'https://ecomtent.s3.amazonaws.com'
+          S3_BUCKET_NAME: 'ecomtent'
+          POLOTNO_KEY: 't0BKUibIuFTxaF3fF7Qv'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /set-aplus
+            Method: post
+            RestApiId: !Ref ApiGatewayRestApi
+
   FunctionHelloWorldJS:
     Type: AWS::Serverless::Function
     Properties:
