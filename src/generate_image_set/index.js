@@ -58,17 +58,18 @@ exports.handler = async (event, context) => {
             .filter((promise) => promise.status === 'fulfilled')
             .map((promise) => promise.value);
 
-        const failedResponses = imageResponses
-            .filter((promise) => promise.status === 'rejected')
-            .map((promise) => promise.reason);
+        // const failedResponses = imageResponses
+        //     .filter((promise) => promise.status === 'rejected')
 
         const combinedData = successfulResponses
             .map((response) => response.body)
-            .filter((data) => data?.image_url && data?.polotno_json);
+            .filter((subObject) =>
+                !(subObject.image_url === "" && subObject.polotno_json === "")
+            );
         
-        failedResponses.forEach((response, index) => {
-            console.error(`Error in lambda function [${['benefit_infographic', 'dimension_infographic', 'lifestyle_infographic'][index]}]:`, response.message || response);
-            });
+        // failedResponses.forEach((response, index) => {
+        //     console.error(`Error in lambda function [${['benefit_infographic', 'dimension_infographic', 'lifestyle_infographic'][index]}]:`, response.message || response);
+        //     });
 
         return {
             statusCode: 200,
