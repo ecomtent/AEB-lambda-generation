@@ -3,7 +3,6 @@ const { jsonToBlobs } = require('../utils/image_utils');
 const _ = require('lodash');
 const axios = require('axios');
 
-
 exports.handler = async (event, context) => {
   const body = JSON.parse(event.body);  
   const { seller_id, listing_id, seller_email, language } = body;
