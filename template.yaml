@@ -64,48 +64,7 @@ Resources:
             Method: post
             RestApiId: !Ref ApiGatewayRestApi
 
-  FunctionHelloWorldJS:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/function_hello_world_js/
-      Handler: index.handler
-      Runtime: nodejs18.x
-      Policies:
-        - AWSLambdaBasicExecutionRole
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /function-hello-world-js
-            Method: get
-            RestApiId: !Ref ApiGatewayRestApi
-
-  FunctionQueryDBJS:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/function_query_db_js/
-      Handler: index.handler
-      Runtime: nodejs18.x
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Layers:
-        - arn:aws:lambda:us-east-1:466815431336:layer:aws-sdk-v3-dynamodb-node18-layer:1
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /function-query-db-js
-            Method: post
-            RestApiId: !Ref ApiGatewayRestApi
-
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint URL
     Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
-  FunctionHelloWorldJSArn:
-    Description: FunctionHelloWorldJS ARN
-    Value: !GetAtt FunctionHelloWorldJS.Arn
-  FunctionQueryDBJSArn:
-    Description: FunctionQueryDBJS ARN
-    Value: !GetAtt FunctionQueryDBJS.Arn
