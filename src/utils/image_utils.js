@@ -1,10 +1,8 @@
-const axios = require('axios');
 const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');   
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { createInstance } = require('polotno-node/instance');
 
 // Initialize these once outside the handler
-const s3Client = new S3Client({ region: 'us-east-1' });
 chromium.setHeadlessMode = true;
 chromium.setGraphicsMode = false;
 
@@ -33,8 +31,6 @@ const getBrowser = async () => {
   }
   return browserInstance;
 };
-
-const { createInstance } = require('polotno-node/instance');
 
 const jsonToDataURL = async (json) => {
   let instance = null;
@@ -82,35 +78,6 @@ const jsonToBlob = async (json) => {
   return blob;
 };
 
-const jsonToTransparentBlob = async (json) => {
-  let instance = null;
-  let blob = "";
-  try {
-    if (!browser.isConnected()) {
-      console.log('Browser disconnected, creating new instance...');
-      browser = await getBrowser();
-    }
-
-    instance = await createInstance({
-      key: polotnoKey,
-      browser
-    });
-
-    const segmented_image_url  = jsonToDataURL(json);
-    // segmented_image_url = segmented_image_url.replace(/^data:image\/.+;base64,/, '');
-
-    const response = await fetch(segmented_image_url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch the image: ${response.status} ${response.statusText}`);
-    }
-    blob = await response.blob();
-    instance.close();
-  } catch (err) {
-    console.error("Error converting JSON to Transparent Blob", err);
-  }
-  return blob;
-};
-
 const jsonToBlobs = async (multipageTemplate, baseKey) => {
   const { width, height, fonts, pages, unit, dpi } = multipageTemplate;
   const imageBlobsAndJsons = [];
@@ -143,50 +110,4 @@ const jsonToBlobs = async (multipageTemplate, baseKey) => {
   return imageBlobsAndJsons;
 };
 
-const combineJsons = (jsonArray) => {
-  if (!Array.isArray(jsonArray) || jsonArray.length === 0) {
-    throw new Error('Input must be a non-empty array of JSON objects');
-  }
-
-  let combinedJson;
-  try {
-    combinedJson = JSON.parse(jsonArray[0]);
-  } catch (e) {
-    throw new Error('Error parsing the first JSON string');
-  }
-
-  for (let i = 1; i < jsonArray.length; i++) {
-    let json;
-    try {
-      json = JSON.parse(jsonArray[i]);
-    } catch (e) {
-      throw new Error(`Error parsing JSON string at index ${i}`);
-    }
-    if (typeof json !== 'object' || json === null) {
-      throw new Error(`Element at index ${i} must be a valid JSON object`);
-    }
-
-    // check for consistency in properties
-    if (combinedJson.width !== json.width) {
-      throw new Error(`Inconsistent width across JSON objects: ${combinedJson.width} vs ${json.width}`);
-    }
-    if (combinedJson.height !== json.height) {
-      throw new Error(`Inconsistent height across JSON objects: ${combinedJson.height} vs ${json.height}`);
-    }
-    if (combinedJson.unit !== json.unit) {
-      throw new Error(`Inconsistent unit across JSON objects: ${combinedJson.unit} vs ${json.unit}`);
-    }
-    if (combinedJson.dpi !== json.dpi) {
-      throw new Error(`Inconsistent DPI across JSON objects: ${combinedJson.dpi} vs ${json.dpi}`);
-    }
-    // merge fonts if necessary
-    const combinedFonts = new Set([...combinedJson.fonts, ...json.fonts]);
-    combinedJson.fonts = Array.from(combinedFonts);
-
-    combinedJson.pages = [...combinedJson.pages, ...json.pages];
-  }
-
-  return combinedJson;
-};
-
-module.exports = { jsonToDataURL, jsonToBlob , jsonToTransparentBlob, jsonToBlobs , combineJsons };
+module.exports = { jsonToDataURL, jsonToBlob, jsonToBlobs };
