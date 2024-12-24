@@ -35,47 +35,52 @@ exports.handler = async (event, context) => {
         
         const aplusParams = { user_email: seller_email, listing_id, seller_id, target_language: language };
         console.log("Triggering A+ content processing with params: ", aplusParams);
-        const executionResponse = await axios.post(`${process.env.LISTING_GATEWAY}/trigger-aplus-sm`, { input: aplusParams });
-        const execution_arn = executionResponse.data.execution_arn;
-        console.log("Execution ARN: ", execution_arn);
-        await new Promise(resolve => setTimeout(resolve, 25000)); // 25 seconds
-        
-        let result;
-        try {
-            result = await axios.post(`${process.env.LISTING_GATEWAY}/polling`, { execution_arn });
-        } catch (err) {
-            // If polling fails, capture the error response from backend
-            const errorData = err.response.data;
-            console.error("Error while polling:", errorData);
-            return {
-              statusCode: err.response.status,
-              body: JSON.stringify(errorData)
-          };
+
+        setImmediate(async() => {
+          try {
+            const executionResponse = await axios.post(`${process.env.LISTING_GATEWAY}/trigger-aplus-sm`, { input: aplusParams });
+            const execution_arn = executionResponse.data.execution_arn;
+            console.log("Execution ARN: ", execution_arn);
+            await new Promise(resolve => setTimeout(resolve, 25000)); // 25 seconds
+
+            let result;
+            try {
+              result = await axios.post(`${process.env.LISTING_GATEWAY}/polling`, { execution_arn });
+            } catch (err) {
+              const errorData = err.response.data;
+              console.error("Error while polling:", errorData);
+              return;
+            }
+
+            const s3Url = result.data.output;
+            const aplusTemplate = await (await fetch(s3Url)).json();
+            const imageBlobsAndJsons = await jsonToBlobs(aplusTemplate, baseKey);
+
+            await Promise.all([
+              ...imageBlobsAndJsons.map(({ idx, json_str }) => putObjectToS3(idx, json_str, "json", "application/json")),
+              ...imageBlobsAndJsons.map(({ idx, png_blob }) => putObjectToS3(idx, png_blob, "png", "image/png"))
+            ]);
+
+            const png_json_pair = pngUrls.map((url, idx) => ({
+              image_url: url,
+              polotno_json: jsonUrls[idx]
+            }));
+
+            // TO-DO update listing
+
+            const websocketResult = await websocketNotifyClients(seller_id, listing_id);
+            if (!websocketResult) {
+              console.error('WebSocket notification failed');
+            }
+
+          } catch (err) {
+            console.error("Unable to process the request. Error JSON:", JSON.stringify(err, null, 2));
         }
+        })
 
-        const s3Url = result.data.output
-        const aplusTemplate = await (await fetch(s3Url)).json();
-
-        const imageBlobsAndJsons = await jsonToBlobs(aplusTemplate, baseKey);
-
-        await Promise.all([
-            ...imageBlobsAndJsons.map(({ idx, json_str }) => putObjectToS3(idx, json_str, "json", "application/json")),
-            ...imageBlobsAndJsons.map(({ idx, png_blob }) => putObjectToS3(idx, png_blob, "png", "image/png"))
-        ]);
-
-        const png_json_pair = pngUrls.map((url, idx) => ({
-            image_url: url,
-            polotno_json: jsonUrls[idx]
-        }));
-
-        const websocketResult = await websocketNotifyClients(seller_id, listing_id);
-        if (!websocketResult) {
-          console.error('WebSocket notification failed');
-        }
-        
         return {
           statusCode: 200,
-          body: JSON.stringify(png_json_pair)
+          body: JSON.stringify({ message: `set-aplus triggered for seller ${seller_id} listing ${listing_id}`})
       };
 
     } catch (err) {
