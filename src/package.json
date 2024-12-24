@@ -5,6 +5,6 @@
       "aws-sdk": "^2.1646.0",
       "axios": "^1.7.2",
       "polotno-node": "^2.11.1",
-      "puppeteer": "^22.6.1"
+      "puppeteer-core": "^22.6.1"
   }
 }

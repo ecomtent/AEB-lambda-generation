@@ -44,8 +44,6 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - AmazonS3FullAccess 
       Layers:
-        - arn:aws:lambda:us-east-1:466815431336:layer:aws-sdk-v3-dynamodb-node18-layer:1
-        - arn:aws:lambda:us-east-1:466815431336:layer:aws-sdk-s3-layer:1
         - arn:aws:lambda:us-east-1:466815431336:layer:axios_layer:1
         - arn:aws:lambda:us-east-1:466815431336:layer:puppeteer-core-layer:1
         - arn:aws:lambda:us-east-1:466815431336:layer:polotno-node-layer:1
