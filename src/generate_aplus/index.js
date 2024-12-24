@@ -1,4 +1,4 @@
-const { putObjectToS3, dynamoDB } = require('utils/aws_services');
+const { putObjectToS3, dynamoDB, websocketNotifyClients } = require('utils/aws_services');
 const { jsonToBlobs } = require('utils/image_utils');
 const isEmpty = require('lodash/isEmpty');
 const axios = require('axios');
@@ -68,6 +68,11 @@ exports.handler = async (event, context) => {
             polotno_json: jsonUrls[idx]
         }));
 
+        const websocketResult = await websocketNotifyClients(seller_id, listing_id);
+        if (!websocketResult) {
+          console.error('WebSocket notification failed');
+        }
+        
         return {
           statusCode: 200,
           body: JSON.stringify(png_json_pair)

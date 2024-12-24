@@ -51,6 +51,7 @@ Resources:
         Variables:
           SELLER_TABLE: !If [ IsProd, seller_table_prod, seller_table_dev ]
           LISTING_GATEWAY: !If [ IsProd, 'https://9pwyqhbwx0.execute-api.us-east-1.amazonaws.com/prod', 'https://me3zf0vzl7.execute-api.us-east-1.amazonaws.com/staging' ]
+          WEBSOCKET_NOTIFY_CLIENTS_ARN: !If [ IsProd, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-m-FunctionWebsocketNotifyC-X2tzLX7YMxZ5, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-s-FunctionWebsocketNotifyC-wgI3JldorA20 ]
           S3_BUCKET_URL: 'https://ecomtent.s3.amazonaws.com'
           S3_BUCKET_NAME: 'ecomtent'
           POLOTNO_KEY: 't0BKUibIuFTxaF3fF7Qv'
