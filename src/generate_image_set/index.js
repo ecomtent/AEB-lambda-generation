@@ -1,4 +1,5 @@
 const { dynamoDB } = require('utils/aws_services');
+const isEmpty = require('lodash/isEmpty');
 const axios = require('axios');
 
 const { handler: benefitHandler } = require('./benefit_infographic');
@@ -31,7 +32,7 @@ exports.handler = async (event, context) => {
     };
 
     const data = await dynamoDB.get(dbParams).promise();
-        if (_.isEmpty(data)) {
+        if (isEmpty(data)) {
             return {
             statusCode: 404,
             body: JSON.stringify({ message: 'Item not found' })

@@ -1,6 +1,6 @@
 const { putObjectToS3, dynamoDB } = require('utils/aws_services');
 const { jsonToDataURL } = require('utils/image_utils');
-const _ = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 const axios = require('axios');
 const sharp = require('sharp');
 
@@ -124,7 +124,7 @@ exports.handler = async (event, context) => {
 
   try {
       const data = await dynamoDB.get(params).promise();
-      if (_.isEmpty(data)) {
+      if (isEmpty(data)) {
         return {
           statusCode: 404,
           body: JSON.stringify({ message: 'Item not found' })
