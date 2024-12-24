@@ -1,6 +1,5 @@
 const { dynamoDB } = require('utils/aws_services');
 const isEmpty = require('lodash/isEmpty');
-const axios = require('axios');
 
 const { handler: benefitHandler } = require('./benefit_infographic');
 const { handler: dimensionHandler } = require('./dimension_infographic');
@@ -32,19 +31,14 @@ exports.handler = async (event, context) => {
     };
 
     const data = await dynamoDB.get(dbParams).promise();
-        if (isEmpty(data)) {
-            return {
+    if (isEmpty(data)) {
+        return {
             statusCode: 404,
             body: JSON.stringify({ message: 'Item not found' })
         };
     }
 
-    const params = {
-        seller_id,
-        listing_id,
-        seller_email,
-        language
-    };
+    const params = { seller_id, listing_id, seller_email, language };
 
     const promises = [
         invokeHandler(benefitHandler, { ...params, functionType: 'benefit_infographic' }),

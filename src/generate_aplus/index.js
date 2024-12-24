@@ -34,8 +34,10 @@ exports.handler = async (event, context) => {
         }
         
         const aplusParams = { user_email: seller_email, listing_id, seller_id, target_language: language };
+        console.log("Triggering A+ content processing with params: ", aplusParams);
         const executionResponse = await axios.post(`${process.env.LISTING_GATEWAY}/trigger-aplus-sm`, { input: aplusParams });
         const execution_arn = executionResponse.data.execution_arn;
+        console.log("Execution ARN: ", execution_arn);
         await new Promise(resolve => setTimeout(resolve, 25000)); // 25 seconds
         
         let result;
