@@ -1,4 +1,4 @@
-const { putObjectToS3, dynamoDB, websocketNotifyClients } = require('utils/aws_services');
+const { putObjectToS3, dynamoDB, websocketNotifyClients, updateListing } = require('utils/aws_services');
 const { jsonToBlobs } = require('utils/image_utils');
 const isEmpty = require('lodash/isEmpty');
 const axios = require('axios');
@@ -61,16 +61,30 @@ exports.handler = async (event, context) => {
               ...imageBlobsAndJsons.map(({ idx, png_blob }) => putObjectToS3(idx, png_blob, "png", "image/png"))
             ]);
 
-            const png_json_pair = pngUrls.map((url, idx) => ({
-              image_url: url,
-              polotno_json: jsonUrls[idx]
-            }));
+            const aplusData = {};
+            pngUrls.forEach((url, idx) => {
+              aplusData[`page_${idx + 1}`] = {
+                image_url: url,
+                polotno_json: jsonUrls[idx]
+              };
+            });
 
-            // TO-DO update listing
+            const updateResult = await updateListing({
+              seller_id,
+              listing_id,
+              listing_updates: {
+                aplus: aplusData
+              }
+            });
 
-            const websocketResult = await websocketNotifyClients(seller_id, listing_id);
-            if (!websocketResult) {
-              console.error('WebSocket notification failed');
+            if (updateResult) {
+              console.log('Listing updated successfully');
+              const websocketResult = await websocketNotifyClients(seller_id, listing_id);
+              if (!websocketResult) {
+                console.error('WebSocket notification failed');
+              }
+            } else {
+              console.error('Listing update failed, skipping WebSocket notification');
             }
 
           } catch (err) {
