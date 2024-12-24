@@ -1,4 +1,4 @@
-const { dynamoDB } = require('../utils/aws_services');
+const { dynamoDB } = require('utils/aws_services');
 const axios = require('axios');
 
 const { handler: benefitHandler } = require('./benefit_infographic');

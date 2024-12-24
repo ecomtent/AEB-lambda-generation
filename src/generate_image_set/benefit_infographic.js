@@ -1,6 +1,6 @@
 
-const { putObjectToS3, dynamoDB } = require('../utils/aws_services');
-const { jsonToBlob } = require('../utils/image_utils');
+const { putObjectToS3, dynamoDB } = require('utils/aws_services');
+const { jsonToBlob } = require('utils/image_utils');
 const _ = require('lodash');
 const axios = require('axios');
 
