@@ -70,43 +70,43 @@ Resources:
             Path: /set-aplus
             Method: post
             RestApiId: !Ref ApiGatewayRestApi
-  SetImageSetFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./src
-      Handler: generate_image_set/index.handler
-      Runtime: nodejs18.x
-      Policies:
-        - AmazonDynamoDBFullAccess
-        - AWSLambdaBasicExecutionRole
-        - AmazonS3FullAccess 
-        - Statement:
-          - Sid: LambdaInvokePolicy
-            Effect: Allow
-            Action: 
-            - lambda:InvokeFunction
-            - lambda:InvokeAsync
-            Resource: '*'
-      Layers:
-        - arn:aws:lambda:us-east-1:466815431336:layer:axios_layer:1
-        - arn:aws:lambda:us-east-1:466815431336:layer:puppeteer-core-layer:1
-        - arn:aws:lambda:us-east-1:466815431336:layer:polotno-node-layer:1
-      Environment:
-        Variables:
-          SELLER_TABLE: !If [ IsProd, seller_table_prod, seller_table_dev ]
-          LISTING_GATEWAY: !If [ IsProd, 'https://9pwyqhbwx0.execute-api.us-east-1.amazonaws.com/prod', 'https://me3zf0vzl7.execute-api.us-east-1.amazonaws.com/staging' ]
-          WEBSOCKET_NOTIFY_CLIENTS_ARN: !If [ IsProd, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-m-FunctionWebsocketNotifyC-X2tzLX7YMxZ5, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-s-FunctionWebsocketNotifyC-wgI3JldorA20 ]
-          LISTING_CRUD_LAMBDA_ARN: !If [ IsProd, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-m-FunctionUpdateSingleList-idDGpiIeX81h, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-s-FunctionUpdateSingleList-BoF5HGVRXWco ]
-          S3_BUCKET_URL: 'https://ecomtent.s3.amazonaws.com'
-          S3_BUCKET_NAME: 'ecomtent'
-          POLOTNO_KEY: 't0BKUibIuFTxaF3fF7Qv'
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /set-image-set
-            Method: post
-            RestApiId: !Ref ApiGatewayRestApi
+  # SetImageSetFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: ./src
+  #     Handler: generate_image_set/index.handler
+  #     Runtime: nodejs18.x
+  #     Policies:
+  #       - AmazonDynamoDBFullAccess
+  #       - AWSLambdaBasicExecutionRole
+  #       - AmazonS3FullAccess 
+  #       - Statement:
+  #         - Sid: LambdaInvokePolicy
+  #           Effect: Allow
+  #           Action: 
+  #           - lambda:InvokeFunction
+  #           - lambda:InvokeAsync
+  #           Resource: '*'
+  #     Layers:
+  #       - arn:aws:lambda:us-east-1:466815431336:layer:axios_layer:1
+  #       - arn:aws:lambda:us-east-1:466815431336:layer:puppeteer-core-layer:1
+  #       - arn:aws:lambda:us-east-1:466815431336:layer:polotno-node-layer:1
+  #     Environment:
+  #       Variables:
+  #         SELLER_TABLE: !If [ IsProd, seller_table_prod, seller_table_dev ]
+  #         LISTING_GATEWAY: !If [ IsProd, 'https://9pwyqhbwx0.execute-api.us-east-1.amazonaws.com/prod', 'https://me3zf0vzl7.execute-api.us-east-1.amazonaws.com/staging' ]
+  #         WEBSOCKET_NOTIFY_CLIENTS_ARN: !If [ IsProd, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-m-FunctionWebsocketNotifyC-X2tzLX7YMxZ5, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-s-FunctionWebsocketNotifyC-wgI3JldorA20 ]
+  #         LISTING_CRUD_LAMBDA_ARN: !If [ IsProd, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-m-FunctionUpdateSingleList-idDGpiIeX81h, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-s-FunctionUpdateSingleList-BoF5HGVRXWco ]
+  #         S3_BUCKET_URL: 'https://ecomtent.s3.amazonaws.com'
+  #         S3_BUCKET_NAME: 'ecomtent'
+  #         POLOTNO_KEY: 't0BKUibIuFTxaF3fF7Qv'
+  #     Events:
+  #       ApiEvent:
+  #         Type: Api
+  #         Properties:
+  #           Path: /set-image-set
+  #           Method: post
+  #           RestApiId: !Ref ApiGatewayRestApi
 
 Outputs:
   ApiUrl:

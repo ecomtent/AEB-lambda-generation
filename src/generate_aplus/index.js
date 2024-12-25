@@ -1,6 +1,5 @@
 const { putObjectToS3, dynamoDB, websocketNotifyClients, updateListing } = require('utils/aws_services');
 const { jsonToBlobs } = require('utils/image_utils');
-const isEmpty = require('lodash/isEmpty');
 const axios = require('axios');
 
 exports.handler = async (event, context) => {
@@ -23,7 +22,7 @@ exports.handler = async (event, context) => {
 
   try {
       const data = await dynamoDB.get(params).promise();
-      if (isEmpty(data)) {
+      if (!data.Item) {
         throw new Error('Item not found');
       }
       
