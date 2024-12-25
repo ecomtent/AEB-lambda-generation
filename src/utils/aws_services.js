@@ -1,10 +1,9 @@
-const AWS = require('aws-sdk');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
 
-AWS.config.update({ region: 'us-east-1' });
-
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const dynamoDB = new AWS.DynamoDB.DocumentClient({
+  region: 'us-east-1'
+});
 
 const s3Client = new S3Client({
   region: 'us-east-1',
