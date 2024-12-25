@@ -4,6 +4,7 @@ const isEmpty = require('lodash/isEmpty');
 const axios = require('axios');
 
 exports.handler = async (event, context) => {
+  console.log("Incoming event:", event);
   const { seller_id, listing_id, seller_email, language } = event;
 
   if (!seller_id || !listing_id || !seller_email || !language ) {
