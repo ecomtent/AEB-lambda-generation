@@ -31,14 +31,17 @@ exports.handler = async (event, context) => {
 
       setImmediate(async() => {
         try {
+          console.log("Sending request to trigger A+ content processing...");
           const executionResponse = await axios.post(`${process.env.LISTING_GATEWAY}/trigger-aplus-sm`, { input: aplusParams });
           const execution_arn = executionResponse.data.execution_arn;
           console.log("Execution ARN: ", execution_arn);
           await new Promise(resolve => setTimeout(resolve, 25000)); // 25 seconds
+          console.log("Polling for result...");
 
           let result;
           try {
             result = await axios.post(`${process.env.LISTING_GATEWAY}/polling`, { execution_arn });
+            console.log("Polling result:", result.data);
           } catch (err) {
             const errorData = err.response.data;
             console.error("Error while polling:", errorData);
@@ -46,6 +49,7 @@ exports.handler = async (event, context) => {
           }
 
           const s3Url = result.data.output;
+          console.log("S3 URL for A+ template:", s3Url);
           const aplusTemplate = await (await fetch(s3Url)).json();
           const imageBlobsAndJsons = await jsonToBlobs(aplusTemplate, baseKey);
 
