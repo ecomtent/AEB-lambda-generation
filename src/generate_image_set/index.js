@@ -1,7 +1,7 @@
 const { putObjectToS3, websocketNotifyClients, updateListing } = require('utils/aws_services');
 const { jsonToBlob } = require('utils/image_utils');
 
-const SELLER_TABLE = process.env.SELLER_TABLE_TABLE;
+const SELLER_TABLE = process.env.SELLER_TABLE_NAME;
 
 exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
