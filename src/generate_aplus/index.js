@@ -26,7 +26,10 @@ exports.handler = async (event, context) => {
       ...imageBlobsAndJsons.map(({ idx, json_str }) => putObjectToS3(idx, json_str, "json", "application/json")),
       ...imageBlobsAndJsons.map(({ idx, png_blob }) => putObjectToS3(idx, png_blob, "png", "image/png"))
     ]);
+
     console.log("Successfully uploaded PNG and JSON files.");
+    console.log("Generated PNG URLs:", JSON.stringify(pngUrls, null, 2));
+    console.log("Generated JSON URLs:", JSON.stringify(jsonUrls, null, 2));
 
     const aplusData = {};
     pngUrls.forEach((url, idx) => {
@@ -43,7 +46,7 @@ exports.handler = async (event, context) => {
     });
 
     if (updateResult) {
-      console.log('Listing updated successfully');
+      console.log(`Listing updated successfully for seller id ${seller_id} listing id ${listing_id}.`);
       const websocketResult = await websocketNotifyClients(seller_id, listing_id);
       if (websocketResult) {
         console.log('WebSocket notification sent successfully');
@@ -54,7 +57,6 @@ exports.handler = async (event, context) => {
       console.error('Listing update failed, skipping WebSocket notification');
     }
 
-    console.log("A+ content processed for seller", seller_id, "and listing", listing_id, "with template URL:", s3url);
     return { aplus: aplusData };
 
   } catch (err) {
