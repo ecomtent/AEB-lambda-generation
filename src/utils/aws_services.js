@@ -30,7 +30,7 @@ async function putObjectToS3(key, body, extention, contentType) {
   }
 }
 
-async function websocketNotifyClients(sellerId, listingId) {
+async function websocketNotifyClients(seller_id, listing_id) {
   const requestPayload = {
     body: JSON.stringify({
       seller_id: seller_id,
