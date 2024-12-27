@@ -36,9 +36,9 @@ const jsonToDataURL = async (json) => {
   let instance = null;
   let segmented_image_url = "";
   try {
-    if (!browser.isConnected()) {
+    if (!browserInstance.isConnected()) {
       console.log('Browser disconnected, creating new instance...');
-      browser = await getBrowser();
+      browserInstance = await getBrowser();
     }
 
     instance = await createInstance({
@@ -59,14 +59,14 @@ const jsonToBlob = async (json) => {
   let instance = null;
   let blob = "";
   try {
-    if (!browser.isConnected()) {
+    if (!browserInstance.isConnected()) {
       console.log('Browser disconnected, creating new instance...');
       browser = await getBrowser();
     }
 
     instance = await createInstance({
       key: polotnoKey,
-      browser,
+      browserInstance,
       useParallelPages: false,
     });
     
