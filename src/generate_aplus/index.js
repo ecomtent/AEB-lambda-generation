@@ -1,4 +1,4 @@
-const { putObjectToS3, dynamoDB, websocketNotifyClients, updateListing } = require('utils/aws_services');
+const { putObjectToS3, dynamoDB, GetCommand, websocketNotifyClients, updateListing } = require('utils/aws_services');
 const { jsonToBlobs } = require('utils/image_utils');
 const axios = require('axios');
 
@@ -21,8 +21,8 @@ exports.handler = async (event, context) => {
   };
 
   try {
-      const data = await dynamoDB.get(params).promise();
-      if (!data.Item) {
+      const { Item } = await dynamoDB.send(new GetCommand(params));
+      if (!Item) {
         throw new Error('Item not found');
       }
       

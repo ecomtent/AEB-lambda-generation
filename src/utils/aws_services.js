@@ -1,9 +1,10 @@
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand } = require('@aws-sdk/lib-dynamodb');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
 
-const dynamoDB = new AWS.DynamoDB.DocumentClient({
-  region: 'us-east-1'
-});
+const dynamoDBClient = new DynamoDBClient({ region: 'us-east-1' });
+const dynamoDB = DynamoDBDocumentClient.from(dynamoDBClient);
 
 const s3Client = new S3Client({
   region: 'us-east-1',
@@ -82,4 +83,4 @@ async function updateListing({ seller_id, listing_id, listing_updates }) {
 }
 
 
-module.exports = { putObjectToS3, dynamoDB, websocketNotifyClients, updateListing };
+module.exports = { putObjectToS3, dynamoDB, GetCommand, websocketNotifyClients, updateListing };
