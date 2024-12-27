@@ -1,6 +1,6 @@
 const { putObjectToS3, dynamoDB } = require('utils/aws_services');
 const { jsonToBlob } = require('utils/image_utils');
-const _ = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 const axios = require('axios');
 
 exports.handler = async (event, context) => {
@@ -18,22 +18,10 @@ exports.handler = async (event, context) => {
     const jsonUrl = process.env.S3_BUCKET_URL + "/" + Key + ".json";
     const pngUrl = process.env.S3_BUCKET_URL + "/" + Key + ".png";
 
-    const params = {
-        TableName: process.env.SELLER_TABLE,
-        Key: { seller_id, listing_id }
-    };
-
     try {
-        const data = await dynamoDB.get(params).promise();
-        if (_.isEmpty(data)) {
-          return {
-            statusCode: 404,
-            body: JSON.stringify({ message: 'Item not found' })
-        };
-        }
-
         // TODO: add error handling for empty dimensions
         const dimensionParams = { user_email: seller_email, listing_id, seller_id }
+        console.log("Triggering dimension infographic processing with params: ", dimensionParams);
 
         let dimensionJSON = {};
         try {
@@ -46,7 +34,7 @@ exports.handler = async (event, context) => {
         };
         }
 
-        if (_.isEmpty(dimensionJSON)) {
+        if (isEmpty(dimensionJSON)) {
           return {
             statusCode: 200,
             body: JSON.stringify({

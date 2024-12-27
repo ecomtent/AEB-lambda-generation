@@ -1,86 +1,73 @@
-const { dynamoDB } = require('utils/aws_services');
-const axios = require('axios');
-
-const { handler: benefitHandler } = require('./benefit_infographic');
-const { handler: dimensionHandler } = require('./dimension_infographic');
-const { handler: lifestyleHandler } = require('./lifestyle_infographic');
-
-const invokeHandler = async (handler, event) => {
-    try {
-      const result = await handler(event);
-      return result;
-    } catch (err) {
-      return { error: err.message };
-    }
-};
+const { putObjectToS3, websocketNotifyClients, updateListing } = require('utils/aws_services');
+const { jsonToBlob } = require('utils/image_utils');
 
 exports.handler = async (event, context) => {
-    const body = JSON.parse(event.body);
-    const { seller_id, listing_id, seller_email, language } = body;
+  console.log("Incoming event:", event);
+  const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3lifestyle } = event;
 
-    if (!seller_id || !listing_id || !seller_email || !language) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Bad request - Missing required fields' })
-        };
+  if (!seller_id || !listing_id || !seller_email || !s3benefit || !s3dimension || !s3lifestyle) {
+    throw new Error('Bad request - Missing required fields');
+  }
+
+  const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}`;
+
+  try {
+    console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle);
+    const templates = [
+      { url: s3benefit, type: 'infographic' },
+      { url: s3dimension, type: 'dimension' },
+      { url: s3lifestyle, type: 'lifestyle' },
+    ];
+    const imageBlobsAndJsons = await Promise.all(
+      templates.map(async ({ url, type }) => {
+        const key = `${baseKey}_${type}_design_out`;
+        const jsonUrl = `${process.env.S3_BUCKET_URL}/${key}.json`;
+        const pngUrl = `${process.env.S3_BUCKET_URL}/${key}.png`;
+
+        const imageSetTemplate = await fetch(url).then(response => response.json());
+        const imageData = await jsonToBlob(imageSetTemplate);
+
+        return { imageData, jsonUrl, pngUrl };
+      })
+    );
+
+    // Uploading both JSON and PNG files to S3    
+    await Promise.all(
+      imageBlobsAndJsons.map(({ imageBlob, jsonUrl, pngUrl }) => {
+        return Promise.all([
+          putObjectToS3(jsonUrl, JSON.stringify(imageSetTemplate), "json", "application/json"),
+          putObjectToS3(pngUrl, imageBlob, "jpg", "image/jpg"),
+        ]);
+      })
+    );
+    console.log("Successfully uploaded PNG and JSON files.");
+
+    const combinedData = imageBlobsAndJsons.map(({ jsonUrl, pngUrl }) => ({
+      image_url: pngUrl,
+      polotno_json: jsonUrl
+    }));
+
+    const updateResult = await updateListing({
+      seller_id,
+      listing_id,
+      listing_updates: { listing_images: combinedData }
+    });
+
+    if (updateResult) {
+      console.log('Listing updated successfully');
+      const websocketResult = await websocketNotifyClients(seller_id, listing_id);
+      if (websocketResult) {
+        console.log('WebSocket notification sent successfully');
+      } else {
+        console.error('WebSocket notification failed');
+      }
+    } else {
+      console.error('Listing update failed, skipping WebSocket notification');
     }
 
-    const dbParams = {
-        TableName: process.env.SELLER_TABLE,
-        Key: { seller_id, listing_id }
-    };
+    return { combinedData: combinedData };
 
-    const data = await dynamoDB.get(dbParams).promise();
-        if (_.isEmpty(data)) {
-            return {
-            statusCode: 404,
-            body: JSON.stringify({ message: 'Item not found' })
-        };
-    }
-
-    const params = {
-        seller_id,
-        listing_id,
-        seller_email,
-        language
-    };
-
-    const promises = [
-        invokeHandler(benefitHandler, { ...params, functionType: 'benefit_infographic' }),
-        invokeHandler(dimensionHandler, { ...params, functionType: 'dimension_infographic' }),
-        invokeHandler(lifestyleHandler, { ...params, functionType: 'lifestyle_infographic' }),
-      ];
-
-    try {
-        const imageResponses = await Promise.allSettled(promises);
-
-        const successfulResponses = imageResponses
-            .filter((promise) => promise.status === 'fulfilled')
-            .map((promise) => promise.value);
-
-        // const failedResponses = imageResponses
-        //     .filter((promise) => promise.status === 'rejected')
-
-        const combinedData = successfulResponses
-            .map((response) => response.body)
-            .filter((subObject) =>
-                !(subObject.image_url === "" && subObject.polotno_json === "")
-            );
-        
-        // failedResponses.forEach((response, index) => {
-        //     console.error(`Error in lambda function [${['benefit_infographic', 'dimension_infographic', 'lifestyle_infographic'][index]}]:`, response.message || response);
-        //     });
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ images: combinedData }),
-        };
-
-    } catch (err) {
-        console.error("Error processing the request:", JSON.stringify(err, null, 2));
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Internal Server Error', error: err.message })
-        };
-    }
+  } catch (err) {
+    console.error("Unable to process the request:", err.message);
+  }
 };

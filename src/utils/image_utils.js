@@ -2,80 +2,79 @@ const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');   
 const { createInstance } = require('polotno-node/instance');
 
-// Initialize these once outside the handler
-chromium.setHeadlessMode = true;
-chromium.setGraphicsMode = false;
-
-// Reusable browser instance
-let browserInstance = null;
-
 const polotnoKey = process.env.POLOTNO_KEY
 
 // Initialize browser once and reuse
 const getBrowser = async () => {
-  if (!browserInstance || !browserInstance.isConnected()) {  
-      browserInstance = await puppeteer.launch({
-          args: [
-              ...chromium.args,
-              '--no-zygote',
-              '--single-process',
-              '--disable-dev-shm-usage',  
-              '--disable-gpu',            
-              '--no-sandbox'              
-          ],
-          defaultViewport: chromium.defaultViewport,
-          executablePath: await chromium.executablePath(),
-          headless: chromium.headless,
-          ignoreHTTPSErrors: true,
-      });
+  try {
+    const browser = await puppeteer.launch({
+      args: [
+        ...chromium.args,
+        '--no-zygote',
+        '--single-process',
+        '--disable-dev-shm-usage',  
+        '--disable-gpu',            
+        '--no-sandbox'              
+      ],
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
+
+    return browser;
+  } catch (err) {
+    console.error('Error launching browser:', err);
+    throw new Error('Failed to launch browser');
   }
-  return browserInstance;
 };
 
 const jsonToDataURL = async (json) => {
-  let instance = null;
+  let browser;
+  let instance;
   let segmented_image_url = "";
   try {
-    if (!browser.isConnected()) {
-      console.log('Browser disconnected, creating new instance...');
-      browser = await getBrowser();
-    }
-
+    browser = await getBrowser();
     instance = await createInstance({
       key: polotnoKey,
       browser
     });
-    
-    segmented_image_url  = await instance.jsonToDataURL(json, { ignoreBackground: true });
-    instance.close();
-  } catch (err) {
-    console.error("Error converting JSON to URL", err);
-  }
 
+    segmented_image_url = await instance.jsonToDataURL(json, { ignoreBackground: true });
+  } catch (err) {
+    console.error('Error converting JSON to URL:', err);
+    throw new Error('Failed to convert JSON to DataURL');
+  } finally {
+    if (instance) await instance.close();
+    if (browser) await browser.close();
+  }
   return segmented_image_url;
-}
+};
 
 const jsonToBlob = async (json) => {
-  let instance = null;
-  let blob = "";
+  let browser;
+  let instance;
   try {
-    if (!browser.isConnected()) {
-      console.log('Browser disconnected, creating new instance...');
-      browser = await getBrowser();
-    }
-
+    browser = await getBrowser();
     instance = await createInstance({
       key: polotnoKey,
       browser,
       useParallelPages: false,
     });
-    
-    blob = await instance.jsonToBlob(json, { mimeType: "image/jpg", assetLoadTimeout: 60000, skipFontError: true });
-    instance.close();
+
+    const blob = await instance.jsonToBlob(json, { 
+      mimeType: 'image/jpg', 
+      assetLoadTimeout: 30000,
+      skipFontError: true 
+    });
+
+    return blob;
   } catch (err) {
-    console.error("Error converting JSON to Blob", err);
+    console.error('Error generating blob:', err);
+    throw new Error('Failed to generate blob');
+  } finally {
+    if (instance) await instance.close();
+    if (browser) await browser.close();
   }
-  return blob;
 };
 
 const jsonToBlobs = async (multipageTemplate, baseKey) => {

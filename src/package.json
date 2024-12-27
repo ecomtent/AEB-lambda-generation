@@ -2,9 +2,6 @@
   "name": "aeb-lambda-generation",
   "version": "1.0.0",
   "dependencies": {
-      "aws-sdk": "^2.1646.0",
-      "axios": "^1.7.2",
-      "polotno-node": "^2.11.1",
-      "puppeteer-core": "^22.6.1"
+      "sharp": "^0.32.6"
   }
 }
