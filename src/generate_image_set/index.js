@@ -9,7 +9,6 @@ exports.handler = async (event, context) => {
     throw new Error('Bad request - Missing required fields');
   }
 
-  const type = ['benefit', 'dimension', 'lifestyle']
   const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}`;
 
   try {
@@ -66,7 +65,6 @@ exports.handler = async (event, context) => {
       console.error('Listing update failed, skipping WebSocket notification');
     }
 
-    console.log("Image set content processed for seller", seller_id, "and listing", listing_id, "with template URL:", s3url);
     return { combinedData: combinedData };
 
   } catch (err) {
