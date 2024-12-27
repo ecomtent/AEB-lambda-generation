@@ -27,19 +27,20 @@ exports.handler = async (event, context) => {
         const jsonUrl = `${process.env.S3_BUCKET_URL}/${key}.json`;
         const pngUrl = `${process.env.S3_BUCKET_URL}/${key}.png`;
 
-        const imageSetTemplate = await fetch(url).then(response => response.json());
-        const imageData = await jsonToBlob(imageSetTemplate);
+        const templateJSON = await fetch(url).then(response => response.json());
+        const json_str = JSON.stringify(templateJSON);
+        const png_blob = await jsonToBlob(imageSetTemplate);
 
-        return { imageSetTemplate, imageBlob, jsonUrl, pngUrl };
+        return { json_str, png_blob, jsonUrl, pngUrl };
       })
     );
 
     // Uploading both JSON and PNG files to S3    
     await Promise.all(
-      imageBlobsAndJsons.map(({ imageSetTemplate, imageBlob, jsonUrl, pngUrl }) => {
+      imageBlobsAndJsons.map(({ json_str, png_blob, jsonUrl, pngUrl }) => {
         return Promise.all([
-          putObjectToS3(jsonUrl, JSON.stringify(imageSetTemplate), "json", "application/json"),
-          putObjectToS3(pngUrl, imageBlob, "jpg", "image/jpg"),
+          putObjectToS3(jsonUrl, json_str, "json", "application/json"),
+          putObjectToS3(pngUrl, png_blob, "jpg", "image/jpg"),
         ]);
       })
     );
