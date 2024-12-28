@@ -109,4 +109,72 @@ const jsonToBlobs = async (multipageTemplate, baseKey) => {
   return imageBlobsAndJsons;
 };
 
-module.exports = { jsonToDataURL, jsonToBlob, jsonToBlobs };
+const filledCanvasJSON = (segmented_image) => {
+  const defaultJson = {
+      "width": 1080,
+      "height": 1080,
+      "fonts": [],
+      "pages": [
+        {
+          "id": "iDJt61VKrs",
+          "children": [
+            {
+              "id": "DkYms5Q_P4",
+              "type": "image",
+              "name": "",
+              "opacity": 1,
+              "animations": [],
+              "visible": true,
+              "selectable": true,
+              "removable": true,
+              "alwaysOnTop": false,
+              "showInExport": true,
+              "x": 0,
+              "y": 0,
+              "width": 1080,
+              "height": 1080,
+              "rotation": 0,
+              "blurEnabled": false,
+              "blurRadius": 10,
+              "brightnessEnabled": false,
+              "brightness": 0,
+              "sepiaEnabled": false,
+              "grayscaleEnabled": false,
+              "shadowEnabled": false,
+              "shadowBlur": 5,
+              "shadowOffsetX": 0,
+              "shadowOffsetY": 0,
+              "shadowColor": "black",
+              "shadowOpacity": 1,
+              "draggable": true,
+              "resizable": true,
+              "contentEditable": true,
+              "styleEditable": true,
+              "src": segmented_image,
+              "cropX": 0,
+              "cropY": 0,
+              "cropWidth": 1,
+              "cropHeight": 1,
+              "cornerRadius": 0,
+              "flipX": false,
+              "flipY": false,
+              "clipSrc": "",
+              "borderColor": "black",
+              "borderSize": 0,
+              "keepRatio": false
+            }
+          ],
+          "width": "auto",
+          "height": "auto",
+          "background": "white",
+          "bleed": 0
+        }
+      ],
+      "unit": "px",
+      "dpi": 72
+    };
+
+  return defaultJson;
+}
+
+module.exports = { jsonToDataURL, jsonToBlob, jsonToBlobs, filledCanvasJSON };
