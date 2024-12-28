@@ -9,18 +9,18 @@ const getBrowser = async () => {
   try {
     const browser = await puppeteer.launch({
       args: [
-        ...chromium.args,
-        '--no-zygote',
-        '--single-process',
-        '--disable-dev-shm-usage',  
-        '--disable-gpu',            
-        '--no-sandbox'              
+          ...chromium.args,
+          '--no-zygote',
+          '--single-process',
+          '--disable-dev-shm-usage',  
+          '--disable-gpu',            
+          '--no-sandbox'              
       ],
+      defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
     });
-
     return browser;
   } catch (err) {
     console.error('Error launching browser:', err);
