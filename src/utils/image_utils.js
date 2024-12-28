@@ -29,11 +29,12 @@ const getBrowser = async () => {
 };
 
 const jsonToDataURL = async (json) => {
-  let browser;
   let instance;
   let segmented_image_url = "";
   try {
-    browser = await getBrowser();
+    if (!browser) {
+      browser = await getBrowser();
+    }
     instance = await createInstance({
       key: polotnoKey,
       browser
@@ -45,16 +46,16 @@ const jsonToDataURL = async (json) => {
     throw new Error('Failed to convert JSON to DataURL');
   } finally {
     if (instance) await instance.close();
-    if (browser) await browser.close();
   }
   return segmented_image_url;
 };
 
 const jsonToBlob = async (json) => {
-  let browser;
   let instance;
   try {
-    browser = await getBrowser();
+    if (!browser) {
+      browser = await getBrowser();
+    }
     instance = await createInstance({
       key: polotnoKey,
       browser,
@@ -73,7 +74,6 @@ const jsonToBlob = async (json) => {
     throw new Error('Failed to generate blob');
   } finally {
     if (instance) await instance.close();
-    if (browser) await browser.close();
   }
 };
 
@@ -81,31 +81,38 @@ const jsonToBlobs = async (multipageTemplate, baseKey) => {
   const { width, height, fonts, pages, unit, dpi } = multipageTemplate;
   const imageBlobsAndJsons = [];
 
-  for (let index = 0; index < pages.length; index++) {
-    const page = pages[index];
-    const imageJson = {
-      width,
-      height,
-      fonts,
-      pages: [page],
-      unit,
-      dpi
-    };
-
-    try {
-      const png_blob = await jsonToBlob(imageJson);
-      const json_str = JSON.stringify(imageJson);
-
-      imageBlobsAndJsons.push({
-        idx: `${baseKey}_${index}`,
-        png_blob,
-        json_str
-      });
-    } catch (err) {
-      console.error(`Error generating blob for index ${index}: ${err.message}`);
+  let browser;
+  try {
+    for (let index = 0; index < pages.length; index++) {
+      const page = pages[index];
+      const imageJson = {
+        width,
+        height,
+        fonts,
+        pages: [page],
+        unit,
+        dpi
+      };
+  
+      try {
+        const png_blob = await jsonToBlob(imageJson);
+        const json_str = JSON.stringify(imageJson);
+  
+        imageBlobsAndJsons.push({
+          idx: `${baseKey}_${index}`,
+          png_blob,
+          json_str
+        });
+      } catch (err) {
+        console.error(`Error generating blob for index ${index}: ${err.message}`);
+      }
     }
+  } catch (err) {
+    console.error('Error launching browser:', err.message);
+  } finally {
+    if (browser) await browser.close();
   }
-
+  
   return imageBlobsAndJsons;
 };
 
