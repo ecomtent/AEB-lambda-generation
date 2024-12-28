@@ -32,7 +32,7 @@ const jsonToDataURL = async (json) => {
   let instance;
   let segmented_image_url = "";
   try {
-    if (!browser) {
+    if (!browser || !browser.isConnected()) {
       browser = await getBrowser();
     }
     instance = await createInstance({
@@ -53,7 +53,7 @@ const jsonToDataURL = async (json) => {
 const jsonToBlob = async (json) => {
   let instance;
   try {
-    if (!browser) {
+    if (!browser || !browser.isConnected()) {
       browser = await getBrowser();
     }
     instance = await createInstance({
@@ -112,7 +112,7 @@ const jsonToBlobs = async (multipageTemplate, baseKey) => {
   } finally {
     if (browser) await browser.close();
   }
-  
+
   return imageBlobsAndJsons;
 };
 
