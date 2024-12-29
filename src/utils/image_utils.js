@@ -29,6 +29,7 @@ const getBrowser = async () => {
 };
 
 const jsonToDataURL = async (json) => {
+  let browser;
   let instance;
   let segmented_image_url = "";
   try {
@@ -51,6 +52,7 @@ const jsonToDataURL = async (json) => {
 };
 
 const jsonToBlob = async (json) => {
+  let browser;
   let instance;
   try {
     if (!browser || !browser.isConnected()) {
