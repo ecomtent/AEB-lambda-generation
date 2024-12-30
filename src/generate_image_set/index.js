@@ -112,7 +112,7 @@ exports.handler = async (event, context) => {
       console.error('Listing update failed, skipping WebSocket notification');
     }
 
-    return { combinedData: combinedData };
+    return combinedData;
 
   } catch (err) {
     console.error("Unable to process the request:", err.message);
