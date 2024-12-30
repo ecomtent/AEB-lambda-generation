@@ -94,6 +94,7 @@ Resources:
         - arn:aws:lambda:us-east-1:466815431336:layer:polotno-node-layer:1
       Environment:
         Variables:
+          SELLER_TABLE_NAME: !If [ IsProd, "seller_table_prod", "seller_table_dev" ]
           WEBSOCKET_NOTIFY_CLIENTS_ARN: !If [ IsProd, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-m-FunctionWebsocketNotifyC-X2tzLX7YMxZ5, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-s-FunctionWebsocketNotifyC-wgI3JldorA20 ]
           LISTING_CRUD_LAMBDA_ARN: !If [ IsProd, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-m-FunctionUpdateSingleList-idDGpiIeX81h, arn:aws:lambda:us-east-1:466815431336:function:AEB-lambda-listing-crud-s-FunctionUpdateSingleList-BoF5HGVRXWco ]
           S3_BUCKET_URL: 'https://ecomtent.s3.amazonaws.com'

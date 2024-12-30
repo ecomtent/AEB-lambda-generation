@@ -1,5 +1,7 @@
-const { putObjectToS3, websocketNotifyClients, updateListing } = require('utils/aws_services');
-const { jsonToBlob } = require('utils/image_utils');
+const { putObjectToS3, dynamoDB, GetCommand, websocketNotifyClients, updateListing } = require('utils/aws_services');
+const { jsonToBlob, filledCanvasJSON, getBrowser, closeBrowser } = require('utils/image_utils');
+
+const SELLER_TABLE = process.env.SELLER_TABLE_NAME;
 
 exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
@@ -12,45 +14,62 @@ exports.handler = async (event, context) => {
   const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}`;
 
   try {
+    const browser = await getBrowser();
     console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle);
+    // benefit and dimension infographic: JSON
     const templates = [
       { url: s3benefit, type: 'infographic' },
       { url: s3dimension, type: 'dimension' },
-      { url: s3lifestyle, type: 'lifestyle' },
     ];
-    const imageBlobsAndJsons = await Promise.all(
+
+    const imageUrlsAndJsons = await Promise.all(
       templates.map(async ({ url, type }) => {
         const key = `${baseKey}_${type}_design_out`;
-        const jsonUrl = `${process.env.S3_BUCKET_URL}/${key}.json`;
+        const jsonUrl = url;
         const pngUrl = `${process.env.S3_BUCKET_URL}/${key}.png`;
-
-        const imageSetTemplate = await fetch(url).then(response => response.json());
-        const imageData = await jsonToBlob(imageSetTemplate);
-
-        return { imageData, jsonUrl, pngUrl };
+        const templateJSON = await fetch(url).then(response => response.json());
+        const png_blob = await jsonToBlob(templateJSON, browser);
+        await putObjectToS3(pngUrl, png_blob, "png", "image/png");
+        console.log(`Successfully uploaded PNG file for ${type} template: ${pngUrl}.`)
+        return { jsonUrl, pngUrl };
       })
     );
 
-    // Uploading both JSON and PNG files to S3    
-    await Promise.all(
-      imageBlobsAndJsons.map(({ imageBlob, jsonUrl, pngUrl }) => {
-        return Promise.all([
-          putObjectToS3(jsonUrl, JSON.stringify(imageSetTemplate), "json", "application/json"),
-          putObjectToS3(pngUrl, imageBlob, "jpg", "image/jpg"),
-        ]);
-      })
-    );
-    console.log("Successfully uploaded PNG and JSON files.");
+    // lifestyle infographic: JPEG
+    const lifestyleKey = `${baseKey}_lifestyle_design_out`;
+    const lifestyleJsonUrl = `${process.env.S3_BUCKET_URL}/${lifestyleKey}.json`;
+    const image_JSON = filledCanvasJSON(s3lifestyle);
+    const json_str = JSON.stringify(image_JSON);
+    await putObjectToS3(lifestyleKey, json_str, "json", "application/json");
 
-    const combinedData = imageBlobsAndJsons.map(({ jsonUrl, pngUrl }) => ({
-      image_url: pngUrl,
-      polotno_json: jsonUrl
-    }));
+    const lifestyleData = {
+      image_url: s3lifestyle,
+      polotno_json: lifestyleJsonUrl,
+    };
 
+    const combinedData = [
+      ...imageUrlsAndJsons.map(({ jsonUrl, pngUrl }) => ({
+        image_url: pngUrl,
+        polotno_json: jsonUrl
+      })),
+      lifestyleData
+    ];
+
+    const getListingParams = {
+      TableName: SELLER_TABLE,
+      Key: { seller_id, listing_id },
+    };
+    const { Item } = await dynamoDB.send(new GetCommand(getListingParams));
+    if (!Item) {
+      throw new Error(`Listing with seller_id ${seller_id} and listing_id ${listing_id} not found`);
+    }
+    const images = Item.listing_images || [];
     const updateResult = await updateListing({
       seller_id,
       listing_id,
-      listing_updates: { listing_images: combinedData }
+      listing_updates: {
+        listing_images: [...images, ...combinedData] // append new images to existing listing images
+      }
     });
 
     if (updateResult) {
@@ -69,5 +88,8 @@ exports.handler = async (event, context) => {
 
   } catch (err) {
     console.error("Unable to process the request:", err.message);
+    return { error: err.message };
+  } finally {
+    await closeBrowser();
   }
 };
