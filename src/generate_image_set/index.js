@@ -57,8 +57,8 @@ exports.handler = async (event, context) => {
       const stockImageBlobsAndJsons = await jsonToBlobs(stockJSON, stockKey, browser);
 
       return Promise.all(stockImageBlobsAndJsons.map(async ({ idx, json_str, png_blob }) => {
-        const jsonUrl = `${S3_BUCKET_URL}/${idx}.json`;
-        const pngUrl = `${S3_BUCKET_URL}/${idx}.png`;
+        const jsonUrl = `${process.env.S3_BUCKET_URL}/${idx}.json`;
+        const pngUrl = `${process.env.S3_BUCKET_URL}/${idx}.png`;
         await Promise.all([
           putObjectToS3(idx, json_str, "json", "application/json"),
           putObjectToS3(idx, png_blob, "png", "image/png")
