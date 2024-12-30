@@ -11,10 +11,10 @@ exports.handler = async (event, context) => {
     throw new Error('Bad request - Missing required fields');
   }
 
+  const browser = await getBrowser();
   const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}`;
 
-  try {
-    const browser = await getBrowser();
+  try {    
     console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle);
     // benefit and dimension infographic: JSON
     const templates = [
@@ -38,8 +38,7 @@ exports.handler = async (event, context) => {
     // lifestyle infographic: JPEG
     const lifestyleKey = `${baseKey}_lifestyle_design_out`;
     const lifestyleJsonUrl = `${process.env.S3_BUCKET_URL}/${lifestyleKey}.json`;
-    const image_JSON = filledCanvasJSON(s3lifestyle);
-    const json_str = JSON.stringify(image_JSON);
+    const json_str = JSON.stringify(filledCanvasJSON(s3lifestyle));
     await putObjectToS3(lifestyleKey, json_str, "json", "application/json");
 
     const lifestyleData = {
@@ -52,23 +51,15 @@ exports.handler = async (event, context) => {
     const stockJSON = await fetch(s3stock).then(response => response.json());
     const stockImageBlobsAndJsons = await jsonToBlobs(stockJSON, stockKey, browser);
 
-    const pageCount = Array.isArray(stockImageBlobsAndJsons) ? stockImageBlobsAndJsons.length : 1;
-    const stockUrls = Array.from({ length: pageCount }, (_, i) => `${process.env.S3_BUCKET_URL}/${stockKey}_${i}`);
-    const pngUrls = stockUrls.map(url => `${url}.png`);
-    const jsonUrls = stockUrls.map(url => `${url}.json`);
-
-    await Promise.all([
-      ...stockImageBlobsAndJsons.map(({ idx, json_str }) => putObjectToS3(idx, json_str, "json", "application/json")),
-      ...stockImageBlobsAndJsons.map(({ idx, png_blob }) => putObjectToS3(idx, png_blob, "png", "image/png"))
-    ]);
-
-    const stockData = {};
-    pngUrls.forEach((url, idx) => {
-      stockData[`page_${idx + 1}`] = {
-        image_url: url,
-        polotno_json: jsonUrls[idx]
-      };
-    });
+    const stockData = await Promise.all(stockImageBlobsAndJsons.map(async ({ idx, json_str, png_blob }) => {
+      const jsonUrl = `${S3_BUCKET_URL}/${idx}.json`;
+      const pngUrl = `${S3_BUCKET_URL}/${idx}.png`;
+      await Promise.all([
+        putObjectToS3(idx, json_str, "json", "application/json"),
+        putObjectToS3(idx, png_blob, "png", "image/png")
+      ]);
+      return { image_url: pngUrl, polotno_json: jsonUrl };
+    }));
 
     const combinedData = [
       ...imageUrlsAndJsons.map(({ jsonUrl, pngUrl }) => ({
