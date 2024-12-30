@@ -186,4 +186,4 @@ const filledCanvasJSON = (segmented_image) => {
   return defaultJson;
 }
 
-module.exports = { jsonToDataURL, jsonToBlob, jsonToBlobs, filledCanvasJSON };
+module.exports = { getBrowser, jsonToDataURL, jsonToBlob, jsonToBlobs, filledCanvasJSON };
