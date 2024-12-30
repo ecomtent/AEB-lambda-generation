@@ -49,8 +49,8 @@ exports.handler = async (event, context) => {
 
     // stock infographic: multipage JSON
     const stockKey = `${baseKey}_stock_design_out`;
-    const stockTemplate = await (await fetch(s3url)).json();
-    const stockImageBlobsAndJsons = await jsonToBlobs(stockTemplate, stockKey, browser);
+    const stockJSON = await fetch(s3stock).then(response => response.json());
+    const stockImageBlobsAndJsons = await jsonToBlobs(stockJSON, stockKey, browser);
 
     const pageCount = Array.isArray(stockImageBlobsAndJsons) ? stockImageBlobsAndJsons.length : 1;
     const stockUrls = Array.from({ length: pageCount }, (_, i) => `${process.env.S3_BUCKET_URL}/${stockKey}_${i}`);
