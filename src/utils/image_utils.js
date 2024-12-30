@@ -30,7 +30,17 @@ const getBrowser = async () => {
       throw new Error('Failed to launch browser');
     }
   }
+  if (!browser || !browser.isConnected()) {
+    throw new Error('Browser is not connected');
+  }
   return browser;
+};
+
+const closeBrowser = async () => {
+  if (browser && browser.isConnected()) {
+    await browser.close();
+    console.log('Browser closed successfully');
+  }
 };
 
 const jsonToDataURL = async (json, browser) => {
@@ -186,4 +196,4 @@ const filledCanvasJSON = (segmented_image) => {
   return defaultJson;
 }
 
-module.exports = { getBrowser, jsonToDataURL, jsonToBlob, jsonToBlobs, filledCanvasJSON };
+module.exports = { getBrowser, closeBrowser, jsonToDataURL, jsonToBlob, jsonToBlobs, filledCanvasJSON };

@@ -1,5 +1,5 @@
 const { putObjectToS3, websocketNotifyClients, updateListing } = require('utils/aws_services');
-const { jsonToBlobs, getBrowser } = require('utils/image_utils');
+const { jsonToBlobs, getBrowser, closeBrowser } = require('utils/image_utils');
 
 exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
@@ -62,5 +62,7 @@ exports.handler = async (event, context) => {
 
   } catch (err) {
     console.error("Unable to process the request:", err.message);
+  } finally {
+    await closeBrowser();
   }
 };

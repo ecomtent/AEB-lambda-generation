@@ -1,5 +1,5 @@
 const { putObjectToS3, dynamoDB, websocketNotifyClients, updateListing } = require('utils/aws_services');
-const { jsonToBlob, filledCanvasJSON, getBrowser } = require('utils/image_utils');
+const { jsonToBlob, filledCanvasJSON, getBrowser, closeBrowser } = require('utils/image_utils');
 
 const SELLER_TABLE = process.env.SELLER_TABLE_NAME;
 
@@ -89,5 +89,7 @@ exports.handler = async (event, context) => {
   } catch (err) {
     console.error("Unable to process the request:", err.message);
     return { error: err.message };
+  } finally {
+    await closeBrowser();
   }
 };
