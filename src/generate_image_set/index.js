@@ -5,9 +5,9 @@ const SELLER_TABLE = process.env.SELLER_TABLE_NAME;
 
 exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
-  const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3lifestyle } = event;
+  const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3lifestyle, s3stock } = event;
 
-  if (!seller_id || !listing_id || !seller_email || !s3benefit || !s3dimension || !s3lifestyle) {
+  if (!seller_id || !listing_id || !seller_email || !s3benefit || !s3dimension || !s3lifestyle || !s3stock) {
     throw new Error('Bad request - Missing required fields');
   }
 
@@ -47,12 +47,36 @@ exports.handler = async (event, context) => {
       polotno_json: lifestyleJsonUrl,
     };
 
+    // stock infographic: multipage JSON
+    const stockKey = `${baseKey}_stock_design_out`;
+    const stockTemplate = await (await fetch(s3url)).json();
+    const stockImageBlobsAndJsons = await jsonToBlobs(stockTemplate, stockKey, browser);
+
+    const pageCount = Array.isArray(stockImageBlobsAndJsons) ? stockImageBlobsAndJsons.length : 1;
+    const stockUrls = Array.from({ length: pageCount }, (_, i) => `${process.env.S3_BUCKET_URL}/${stockKey}_${i}`);
+    const pngUrls = stockUrls.map(url => `${url}.png`);
+    const jsonUrls = stockUrls.map(url => `${url}.json`);
+
+    await Promise.all([
+      ...stockImageBlobsAndJsons.map(({ idx, json_str }) => putObjectToS3(idx, json_str, "json", "application/json")),
+      ...stockImageBlobsAndJsons.map(({ idx, png_blob }) => putObjectToS3(idx, png_blob, "png", "image/png"))
+    ]);
+
+    const stockData = {};
+    pngUrls.forEach((url, idx) => {
+      stockData[`page_${idx + 1}`] = {
+        image_url: url,
+        polotno_json: jsonUrls[idx]
+      };
+    });
+
     const combinedData = [
       ...imageUrlsAndJsons.map(({ jsonUrl, pngUrl }) => ({
         image_url: pngUrl,
         polotno_json: jsonUrl
       })),
-      lifestyleData
+      lifestyleData,
+      ...stockData
     ];
 
     const getListingParams = {
