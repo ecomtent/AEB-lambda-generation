@@ -1,5 +1,5 @@
 const { putObjectToS3, dynamoDB, GetCommand, websocketNotifyClients, updateListing } = require('utils/aws_services');
-const { jsonToBlob, filledCanvasJSON, getBrowser, closeBrowser } = require('utils/image_utils');
+const { jsonToBlob, jsonToBlobs, filledCanvasJSON, getBrowser, closeBrowser } = require('utils/image_utils');
 
 const SELLER_TABLE = process.env.SELLER_TABLE_NAME;
 
