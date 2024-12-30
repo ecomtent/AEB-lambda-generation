@@ -1,5 +1,5 @@
 const { putObjectToS3, dynamoDB, websocketNotifyClients, updateListing } = require('utils/aws_services');
-const { jsonToBlob, filledCanvasJSON } = require('utils/image_utils');
+const { jsonToBlob, filledCanvasJSON, getBrowser } = require('utils/image_utils');
 
 const SELLER_TABLE = process.env.SELLER_TABLE_NAME;
 
@@ -14,6 +14,7 @@ exports.handler = async (event, context) => {
   const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}`;
 
   try {
+    const browser = await getBrowser();
     console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle);
     // benefit and dimension infographic: JSON
     const templates = [
@@ -27,7 +28,7 @@ exports.handler = async (event, context) => {
         const jsonUrl = url;
         const pngUrl = `${process.env.S3_BUCKET_URL}/${key}.png`;
         const templateJSON = await fetch(url).then(response => response.json());
-        const png_blob = await jsonToBlob(templateJSON);
+        const png_blob = await jsonToBlob(templateJSON, browser);
         await putObjectToS3(pngUrl, png_blob, "png", "image/png");
         console.log(`Successfully uploaded PNG file for ${type} template: ${pngUrl}.`)
         return { jsonUrl, pngUrl };

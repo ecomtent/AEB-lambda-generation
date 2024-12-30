@@ -4,32 +4,36 @@ const { createInstance } = require('polotno-node/instance');
 
 const polotnoKey = process.env.POLOTNO_KEY
 
+let browser;
+
 // Initialize browser once and reuse
 const getBrowser = async () => {
-  try {
-    const browser = await puppeteer.launch({
-      args: [
+  if (!browser || !browser.isConnected()) {
+    try {
+      browser = await puppeteer.launch({
+        args: [
           ...chromium.args,
           '--no-zygote',
           '--single-process',
           '--disable-dev-shm-usage',  
           '--disable-gpu',            
           '--no-sandbox'              
-      ],
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
-    });
-    return browser;
-  } catch (err) {
-    console.error('Error launching browser:', err);
-    throw new Error('Failed to launch browser');
+        ],
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+      });
+      console.log("Browser launched successfully");
+    } catch (err) {
+      console.error('Error launching browser:', err);
+      throw new Error('Failed to launch browser');
+    }
   }
+  return browser;
 };
 
-const jsonToDataURL = async (json) => {
-  let browser;
+const jsonToDataURL = async (json, browser) => {
   let instance;
   let segmented_image_url = "";
   try {
@@ -51,8 +55,7 @@ const jsonToDataURL = async (json) => {
   return segmented_image_url;
 };
 
-const jsonToBlob = async (json) => {
-  let browser;
+const jsonToBlob = async (json, browser) => {
   let instance;
   try {
     if (!browser || !browser.isConnected()) {
@@ -79,11 +82,10 @@ const jsonToBlob = async (json) => {
   }
 };
 
-const jsonToBlobs = async (multipageTemplate, baseKey) => {
+const jsonToBlobs = async (multipageTemplate, baseKey, browser) => {
   const { width, height, fonts, pages, unit, dpi } = multipageTemplate;
   const imageBlobsAndJsons = [];
 
-  let browser;
   try {
     for (let index = 0; index < pages.length; index++) {
       const page = pages[index];
@@ -97,7 +99,7 @@ const jsonToBlobs = async (multipageTemplate, baseKey) => {
       };
   
       try {
-        const png_blob = await jsonToBlob(imageJson);
+        const png_blob = await jsonToBlob(imageJson, browser);
         const json_str = JSON.stringify(imageJson);
   
         imageBlobsAndJsons.push({
@@ -111,8 +113,6 @@ const jsonToBlobs = async (multipageTemplate, baseKey) => {
     }
   } catch (err) {
     console.error('Error launching browser:', err.message);
-  } finally {
-    if (browser) await browser.close();
   }
 
   return imageBlobsAndJsons;

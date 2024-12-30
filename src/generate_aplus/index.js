@@ -1,5 +1,5 @@
 const { putObjectToS3, websocketNotifyClients, updateListing } = require('utils/aws_services');
-const { jsonToBlobs } = require('utils/image_utils');
+const { jsonToBlobs, getBrowser } = require('utils/image_utils');
 
 exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
@@ -12,9 +12,10 @@ exports.handler = async (event, context) => {
   const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}_aplus_design_out`;
 
   try {
+    const browser = await getBrowser();
     console.log("S3 URL for A+ infographic template:", s3url);
     const aplusTemplate = await (await fetch(s3url)).json();
-    const imageBlobsAndJsons = await jsonToBlobs(aplusTemplate, baseKey);
+    const imageBlobsAndJsons = await jsonToBlobs(aplusTemplate, baseKey, browser);
 
     const pageCount = Array.isArray(imageBlobsAndJsons) ? imageBlobsAndJsons.length : 1;
     const baseUrls = Array.from({ length: pageCount }, (_, i) => `${process.env.S3_BUCKET_URL}/${baseKey}_${i}`);
