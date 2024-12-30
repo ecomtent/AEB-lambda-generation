@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
   const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3lifestyle, s3stock } = event;
 
-  if (!seller_id || !listing_id || !seller_email || !s3benefit || !s3dimension || !s3lifestyle || !s3stock) {
+  if (!seller_id || !listing_id || !seller_email || !s3benefit || !s3lifestyle || !s3stock) {
     throw new Error('Bad request - Missing required fields');
   }
 
@@ -15,13 +15,15 @@ exports.handler = async (event, context) => {
   const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}`;
 
   try {    
-    console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle);
+    console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle, s3stock);
     // benefit and dimension infographic: JSON
     const processBenefitAndDimension = async () => {
       const templates = [
         { url: s3benefit, type: 'infographic' },
-        { url: s3dimension, type: 'dimension' },
       ];
+      if (s3dimension) {
+        templates.push({ url: s3dimension, type: 'dimension' });
+      }
 
       return Promise.all(
         templates.map(async ({ url, type }) => {
@@ -112,7 +114,7 @@ exports.handler = async (event, context) => {
       console.error('Listing update failed, skipping WebSocket notification');
     }
 
-    return { combinedData: combinedData };
+    return combinedData;
 
   } catch (err) {
     console.error("Unable to process the request:", err.message);
