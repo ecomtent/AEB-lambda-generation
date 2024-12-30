@@ -47,7 +47,7 @@ async function websocketNotifyClients(seller_id, listing_id) {
 
   try {
     await lambdaClient.send(new InvokeCommand(params)); // Send the Lambda invocation asynchronously
-    console.log(`WebSocket notification sent successfully for sellerId: ${sellerId}, listingId: ${listingId}`);
+    console.log(`WebSocket notification sent successfully for seller_id: ${seller_id}, listing_id: ${listing_id}`);
     return true;
   } catch (err) {
     console.error('Error invoking websocket notification Lambda', err);
