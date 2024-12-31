@@ -33,7 +33,11 @@ exports.handler = async (event, context) => {
       const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
       const json_data = s3dimension;
+      const templateJSON = JSON.parse(json_data)
       const png_blob = await jsonToBlob(templateJSON, browser);
+      if (!png_blob || png_blob.length === 0) {
+        return { jsonUrl: "", pngUrl: "" };
+    }
       await putObjectToS3(dimensionKey, json_data, "json", "application/json");
       await putObjectToS3(dimensionKey, png_blob, "png", "image/png");
       console.log(`Successfully uploaded PNG file for dimension template: ${pngUrl}.`);
@@ -79,10 +83,10 @@ exports.handler = async (event, context) => {
     ]);
 
     const combinedData = [
-      ...(benefitData.status === 'fulfilled' ? [{ image_url: benefitData.value.image_url, polotno_json: benefitData.value.polotno_json }] : []),
+      ...(benefitData && benefitData.status === 'fulfilled' ? [{ image_url: benefitData.value.image_url, polotno_json: benefitData.value.polotno_json }] : []),
       ...(dimensionData && dimensionData.status === 'fulfilled' ? [{ image_url: dimensionData.value.image_url, polotno_json: dimensionData.value.polotno_json }] : []),
-      ...(lifestyleData && lifestyleData.image_url ? [lifestyleData] : []),
-      ...(stockData.status === 'fulfilled' ? stockData.value : [])
+      ...(lifestyleData && lifestyleData.status === 'fulfilled' ? [{ image_url: lifestyleData.value.image_url, polotno_json: lifestyleData.value.polotno_json }] : []),
+      ...(stockData && stockData.status === 'fulfilled' ? stockData.value : [])
     ];    
 
     const getListingParams = {
