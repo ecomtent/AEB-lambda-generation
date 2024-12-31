@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
   const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3lifestyle, s3stock } = event;
 
-  if (!seller_id || !listing_id || !seller_email || !s3benefit || !s3lifestyle || !s3stock) {
+  if (!seller_id || !listing_id || !seller_email) {
     throw new Error('Bad request - Missing required fields');
   }
 
@@ -16,27 +16,28 @@ exports.handler = async (event, context) => {
 
   try {    
     console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle, s3stock);
-    // benefit and dimension infographic: JSON
-    const processBenefitAndDimension = async () => {
-      const templates = [
-        { url: s3benefit, type: 'infographic' },
-      ];
-      if (s3dimension) {
-        templates.push({ url: s3dimension, type: 'dimension' });
-      }
+    // benefit infographic: JSON (S3 link)
+    const processBenefit = async () => {
+      const jsonUrl = s3benefit;
+      const pngUrl = `${process.env.S3_BUCKET_URL}/${baseKey}_benefit_design_out.png`;
+      const templateJSON = await fetch(s3benefit).then(response => response.json());
+      const png_blob = await jsonToBlob(templateJSON, browser);
+      await putObjectToS3(pngUrl, png_blob, "png", "image/png");
+      console.log(`Successfully uploaded PNG file for benefit template: ${pngUrl}.`);
+      return { jsonUrl, pngUrl };
+    };
 
-      return Promise.all(
-        templates.map(async ({ url, type }) => {
-          const key = `${baseKey}_${type}_design_out`;
-          const jsonUrl = url;
-          const pngUrl = `${process.env.S3_BUCKET_URL}/${key}.png`;
-          const templateJSON = await fetch(url).then(response => response.json());
-          const png_blob = await jsonToBlob(templateJSON, browser);
-          await putObjectToS3(pngUrl, png_blob, "png", "image/png");
-          console.log(`Successfully uploaded PNG file for ${type} template: ${pngUrl}.`)
-          return { jsonUrl, pngUrl };
-        })
-      );
+    // dimension infographic: JSON template
+    const processDimension = async () => {
+      const dimensionKey = `${baseKey}_dimension_design_out`;
+      const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
+      const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
+      const json_data = s3dimension;
+      const png_blob = await jsonToBlob(templateJSON, browser);
+      await putObjectToS3(dimensionKey, json_data, "json", "application/json");
+      await putObjectToS3(dimensionKey, png_blob, "png", "image/png");
+      console.log(`Successfully uploaded PNG file for dimension template: ${pngUrl}.`);
+      return { jsonUrl, pngUrl };
     };
 
     // lifestyle infographic: JPEG
@@ -70,20 +71,19 @@ exports.handler = async (event, context) => {
     };
 
     // run all processes in parallel
-    const [benefitAndDimensionData, lifestyleData, stockData] = await Promise.allSettled([
-      processBenefitAndDimension(),
+    const [benefitData, dimensionData, lifestyleData, stockData] = await Promise.allSettled([
+      processBenefit(),
+      processDimension(),
       processLifestyle(),
       processStock(),
     ]);
 
     const combinedData = [
-      ...(benefitAndDimensionData.status === 'fulfilled' ? benefitAndDimensionData.value.map(({ jsonUrl, pngUrl }) => ({
-        image_url: pngUrl,
-        polotno_json: jsonUrl
-      })) : []),
-      lifestyleData && lifestyleData.image_url ? lifestyleData : [],
+      ...(benefitData.status === 'fulfilled' ? [{ image_url: benefitData.value.image_url, polotno_json: benefitData.value.polotno_json }] : []),
+      ...(dimensionData && dimensionData.status === 'fulfilled' ? [{ image_url: dimensionData.value.image_url, polotno_json: dimensionData.value.polotno_json }] : []),
+      ...(lifestyleData && lifestyleData.image_url ? [lifestyleData] : []),
       ...(stockData.status === 'fulfilled' ? stockData.value : [])
-    ];
+    ];    
 
     const getListingParams = {
       TableName: SELLER_TABLE,
