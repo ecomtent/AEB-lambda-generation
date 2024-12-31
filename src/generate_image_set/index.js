@@ -70,19 +70,19 @@ exports.handler = async (event, context) => {
     };
 
     // run all processes in parallel
-    const [benefitAndDimensionData, lifestyleData, stockData] = await Promise.all([
+    const [benefitAndDimensionData, lifestyleData, stockData] = await Promise.allSettled([
       processBenefitAndDimension(),
       processLifestyle(),
       processStock(),
     ]);
 
     const combinedData = [
-      ...benefitAndDimensionData.map(({ jsonUrl, pngUrl }) => ({
+      ...(benefitAndDimensionData.status === 'fulfilled' ? benefitAndDimensionData.value.map(({ jsonUrl, pngUrl }) => ({
         image_url: pngUrl,
         polotno_json: jsonUrl
-      })),
-      lifestyleData,
-      ...stockData
+      })) : []),
+      lifestyleData && lifestyleData.image_url ? lifestyleData : [],
+      ...(stockData.status === 'fulfilled' ? stockData.value : [])
     ];
 
     const getListingParams = {
