@@ -25,11 +25,11 @@ exports.handler = async (event, context) => {
       const png_blob = await jsonToBlob(templateJSON, browser);
       if (!png_blob || png_blob.length === 0) {
         console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
-        return { jsonUrl: "", pngUrl: "" };
+        return { image_url: "", polotno_json: "" };
       }
       await putObjectToS3(pngUrl, png_blob, "png", "image/png");
       console.log(`Successfully uploaded PNG file for benefit template: ${pngUrl}.`);
-      return { jsonUrl, pngUrl };
+      return { image_url: pngUrl, polotno_json: jsonUrl }
     };
 
     // dimension infographic: JSON template
@@ -38,16 +38,18 @@ exports.handler = async (event, context) => {
       const dimensionKey = `${baseKey}_dimension_design_out`;
       const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
+      console.log(`Dimension JSON Input data: ${s3dimension}`)
       const json_data = JSON.stringify(s3dimension);
+      console.log(`Dimension JSON stringified data: ${json_data}`)
       const png_blob = await jsonToBlob(s3dimension, browser);
       if (!png_blob || png_blob.length === 0) {
         console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
-        return { jsonUrl: "", pngUrl: "" };
+        return { image_url: "", polotno_json: "" };
       }
       await putObjectToS3(dimensionKey, json_data, "json", "application/json");
       await putObjectToS3(dimensionKey, png_blob, "png", "image/png");
       console.log(`Successfully uploaded PNG file for dimension template: ${pngUrl}.`);
-      return { jsonUrl, pngUrl };
+      return { image_url: pngUrl, polotno_json: jsonUrl };
     };
 
     // lifestyle infographic: JPEG
@@ -58,10 +60,7 @@ exports.handler = async (event, context) => {
       const json_str = JSON.stringify(filledCanvasJSON(s3lifestyle));
       await putObjectToS3(lifestyleKey, json_str, "json", "application/json");
 
-      return {
-        image_url: s3lifestyle,
-        polotno_json: lifestyleJsonUrl,
-      };
+      return { image_url: s3lifestyle, polotno_json: lifestyleJsonUrl };
     };
     
     // stock infographic: multipage JSON
