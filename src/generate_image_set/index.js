@@ -35,11 +35,12 @@ exports.handler = async (event, context) => {
     // dimension infographic: JSON template
     const processDimension = async () => {
       console.log("Processing dimension infographic...")
+      const dimensionJSON = s3dimension.template
       const dimensionKey = `${baseKey}_dimension_design_out`;
       const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
-      const json_data = JSON.stringify(s3dimension);
-      const png_blob = await jsonToBlob(s3dimension, browser);
+      const json_data = JSON.stringify(dimensionJSON);
+      const png_blob = await jsonToBlob(dimensionJSON, browser);
       if (!png_blob || png_blob.length === 0) {
         console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
         return { image_url: "", polotno_json: "" };
