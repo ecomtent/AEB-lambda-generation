@@ -15,14 +15,18 @@ exports.handler = async (event, context) => {
   const baseKey = `images/${seller_email}/${listing_id}_${new Date().toISOString()}`;
 
   try {    
-    console.log("S3 URLs for image set templates:", s3benefit, s3dimension, s3lifestyle, s3stock);
+    console.log(`Generating image set for seller_id ${seller_id}, listing_id ${listing_id}.`);
     // benefit infographic: JSON (S3 link)
     const processBenefit = async () => {
+      console.log("Processing benefit infographic: ", s3benefit)
       const jsonUrl = s3benefit;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${baseKey}_benefit_design_out.png`;
       const templateJSON = await fetch(s3benefit).then(response => response.json());
-      console.log("Benefit template JSON:", templateJSON);
       const png_blob = await jsonToBlob(templateJSON, browser);
+      if (!png_blob || png_blob.length === 0) {
+        console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
+        return { jsonUrl: "", pngUrl: "" };
+      }
       await putObjectToS3(pngUrl, png_blob, "png", "image/png");
       console.log(`Successfully uploaded PNG file for benefit template: ${pngUrl}.`);
       return { jsonUrl, pngUrl };
@@ -30,14 +34,16 @@ exports.handler = async (event, context) => {
 
     // dimension infographic: JSON template
     const processDimension = async () => {
+      console.log("Processing dimension infographic...")
       const dimensionKey = `${baseKey}_dimension_design_out`;
       const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
       const json_data = JSON.stringify(s3dimension);
       const png_blob = await jsonToBlob(s3dimension, browser);
       if (!png_blob || png_blob.length === 0) {
+        console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
         return { jsonUrl: "", pngUrl: "" };
-    }
+      }
       await putObjectToS3(dimensionKey, json_data, "json", "application/json");
       await putObjectToS3(dimensionKey, png_blob, "png", "image/png");
       console.log(`Successfully uploaded PNG file for dimension template: ${pngUrl}.`);
@@ -46,6 +52,7 @@ exports.handler = async (event, context) => {
 
     // lifestyle infographic: JPEG
     const processLifestyle = async () => {
+      console.log("Processing lifestyle infographic: ", s3lifestyle)
       const lifestyleKey = `${baseKey}_lifestyle_design_out`;
       const lifestyleJsonUrl = `${process.env.S3_BUCKET_URL}/${lifestyleKey}.json`;
       const json_str = JSON.stringify(filledCanvasJSON(s3lifestyle));
@@ -59,6 +66,7 @@ exports.handler = async (event, context) => {
     
     // stock infographic: multipage JSON
     const processStock = async () => {
+      console.log("Processing stock infographic: ", s3stock)
       const stockKey = `${baseKey}_stock_design_out`;
       const stockJSON = await fetch(s3stock).then(response => response.json());
       const stockImageBlobsAndJsons = await jsonToBlobs(stockJSON, stockKey, browser);
@@ -81,6 +89,11 @@ exports.handler = async (event, context) => {
       processLifestyle(),
       processStock(),
     ]);
+    
+    console.log("Benefit Data:", benefitData);
+    console.log("Dimension Data:", dimensionData);
+    console.log("Lifestyle Data:", lifestyleData);
+    console.log("Stock Data:", stockData);
 
     const combinedData = [
       ...(benefitData && benefitData.status === 'fulfilled' ? [{ image_url: benefitData.value.image_url, polotno_json: benefitData.value.polotno_json }] : []),
