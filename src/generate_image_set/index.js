@@ -38,9 +38,7 @@ exports.handler = async (event, context) => {
       const dimensionKey = `${baseKey}_dimension_design_out`;
       const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
-      console.log(`Dimension JSON Input data: ${s3dimension}`)
       const json_data = JSON.stringify(s3dimension);
-      console.log(`Dimension JSON stringified data: ${json_data}`)
       const png_blob = await jsonToBlob(s3dimension, browser);
       if (!png_blob || png_blob.length === 0) {
         console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
@@ -48,6 +46,7 @@ exports.handler = async (event, context) => {
       }
       await putObjectToS3(dimensionKey, json_data, "json", "application/json");
       await putObjectToS3(dimensionKey, png_blob, "png", "image/png");
+      console.log(`Successfully uploaded JSON file for dimension template: ${jsonUrl}.`);
       console.log(`Successfully uploaded PNG file for dimension template: ${pngUrl}.`);
       return { image_url: pngUrl, polotno_json: jsonUrl };
     };
