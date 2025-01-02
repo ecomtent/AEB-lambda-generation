@@ -21,7 +21,8 @@ exports.handler = async (event, context) => {
       console.log("Processing benefit infographic: ", s3benefit)
       const jsonUrl = s3benefit;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${baseKey}_benefit_design_out.png`;
-      const templateJSON = await fetch(s3benefit).then(response => response.json());
+      const templateJSON = await fetchJson(s3benefit);
+      console.log("Benefit JSON Template: ", templateJSON);
       const png_blob = await jsonToBlob(templateJSON, browser);
       if (!png_blob || png_blob.length === 0) {
         console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
@@ -36,6 +37,7 @@ exports.handler = async (event, context) => {
     const processDimension = async () => {
       console.log("Processing dimension infographic...")
       const dimensionJSON = s3dimension.template
+      console.log("Dimension JSON Template: ", dimensionJSON);
       const dimensionKey = `${baseKey}_dimension_design_out`;
       const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
       const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
@@ -65,9 +67,10 @@ exports.handler = async (event, context) => {
     
     // stock infographic: multipage JSON
     const processStock = async () => {
-      console.log("Processing stock infographic: ", s3stock)
+      console.log(`Processing stock infographic: ${s3stock}, Pages: ${stockJSON.pages.length}`);
       const stockKey = `${baseKey}_stock_design_out`;
-      const stockJSON = await fetch(s3stock).then(response => response.json());
+      const stockJSON = await fetchJson(s3stock);
+      console.log("Stock JSON Template: ", s3stock);
       const stockImageBlobsAndJsons = await jsonToBlobs(stockJSON, stockKey, browser);
 
       return Promise.all(stockImageBlobsAndJsons.map(async ({ idx, json_str, png_blob }) => {
@@ -137,5 +140,18 @@ exports.handler = async (event, context) => {
     return { error: err.message };
   } finally {
     await closeBrowser();
+  }
+};
+
+const fetchJson = async (url) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch from ${url}`);
+    }
+    return await response.json();
+  } catch (err) {
+    console.error(`Error fetching from ${url}:`, err);
+    throw err;  
   }
 };
