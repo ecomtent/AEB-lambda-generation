@@ -1,7 +1,4 @@
-const AWS = require('aws-sdk');
-const lambda = new AWS.Lambda();
-const updateListingArn = process.env.UPDATE_LISTING_ARN;
-
+const { updateListing } = require('utils/aws_services');
 
 exports.handler = async (event) => {
   const { seller_id, listing_id, is_bulk_generating } = event
@@ -9,35 +6,31 @@ exports.handler = async (event) => {
     throw new Error('Bad request - Missing required fields');
   }
 
+  const listingUpdates = {
+    seller_id: seller_id,
+    listing_id: listing_id,
+    listing_updates: {
+      is_bulk_generating: is_bulk_generating,
+    },
+  };
+
   try {
-    const payload = {
-      seller_id,
-      listing_id,
-      listing_updates: {
-        is_bulk_generating: is_bulk_generating
-      }
-    };
-
-    const response = await lambda.invoke({
-      FunctionName: updateListingArn,
-      InvocationType: 'RequestResponse',
-      Payload: JSON.stringify({ 
-        body: JSON.stringify(payload)
-       })
-    }).promise();
-
-    const responsePayload = JSON.parse(response.Payload);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: 'Successfully invoked the Lambda function to update is_bulk_generating attribute in DynamoDB',
-        data: responsePayload
-      })
-    };
+    const result = await updateListing(listingUpdates);
+    if (result) {
+      console.log(`Listing updated successfully to modify is_bulk_generating to ${is_bulk_generating}:`, result);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: `Listing updated successfully to modify is_bulk_generating to ${is_bulk_generating}`, result }),
+      };
+    } else {
+      console.error('Failed to update listing');
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to update listing' }),
+      };
+    }
   } catch (error) {
     console.error('Error invoking Lambda function:', error);
-
     return {
       statusCode: 500,
       body: JSON.stringify({
