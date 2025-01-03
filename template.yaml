@@ -14,7 +14,7 @@ Conditions:
 
 Globals:
   Function:
-    Timeout: 60
+    Timeout: 300
     Environment:
       Variables:
         ADMIN_TABLE_NAME: !If 
