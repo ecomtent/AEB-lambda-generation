@@ -5,7 +5,8 @@ const SELLER_TABLE = process.env.SELLER_TABLE_NAME;
 
 exports.handler = async (event, context) => {
   console.log("Incoming event:", event);
-  const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3lifestyle, s3stock } = event;
+  // const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3lifestyle, s3stock } = event;
+  const { seller_id, listing_id, seller_email, s3benefit, s3dimension, s3stock } = event;
 
   if (!seller_id || !listing_id || !seller_email) {
     throw new Error('Bad request - Missing required fields');
@@ -62,19 +63,19 @@ exports.handler = async (event, context) => {
     };
 
     // lifestyle infographic: JPEG
-    const processLifestyle = async () => {
-      console.log("Processing lifestyle infographic: ", s3lifestyle);
-      if (!isValidS3Url(s3lifestyle)) {
-        console.log("Invalid S3 URL for lifestyle infographic, skipping...");
-        return { image_url: "", polotno_json: "" };
-      }
-      const lifestyleKey = `${baseKey}_lifestyle_design_out`;
-      const lifestyleJsonUrl = `${process.env.S3_BUCKET_URL}/${lifestyleKey}.json`;
-      const lifestyleJsonStr = JSON.stringify(filledCanvasJSON(s3lifestyle));
-      await putObjectToS3(lifestyleKey, lifestyleJsonStr, "json", "application/json");
+    // const processLifestyle = async () => {
+    //   console.log("Processing lifestyle infographic: ", s3lifestyle);
+    //   if (!isValidS3Url(s3lifestyle)) {
+    //     console.log("Invalid S3 URL for lifestyle infographic, skipping...");
+    //     return { image_url: "", polotno_json: "" };
+    //   }
+    //   const lifestyleKey = `${baseKey}_lifestyle_design_out`;
+    //   const lifestyleJsonUrl = `${process.env.S3_BUCKET_URL}/${lifestyleKey}.json`;
+    //   const lifestyleJsonStr = JSON.stringify(filledCanvasJSON(s3lifestyle));
+    //   await putObjectToS3(lifestyleKey, lifestyleJsonStr, "json", "application/json");
 
-      return { image_url: s3lifestyle, polotno_json: lifestyleJsonUrl };
-    };
+    //   return { image_url: s3lifestyle, polotno_json: lifestyleJsonUrl };
+    // };
     
     // stock infographic: multipage JSON
     const processStock = async () => {
@@ -99,22 +100,27 @@ exports.handler = async (event, context) => {
     };
 
     // run all processes in parallel
-    const [benefitData, dimensionData, lifestyleData, stockData] = await Promise.allSettled([
+    // const [benefitData, dimensionData, lifestyleData, stockData] = await Promise.allSettled([
+    //   processBenefit(),
+    //   processDimension(),
+    //   processLifestyle(),
+    //   processStock(),
+    // ]);
+    const [benefitData, dimensionData, stockData] = await Promise.allSettled([
       processBenefit(),
       processDimension(),
-      processLifestyle(),
       processStock(),
     ]);
     
     console.log("Benefit Data:", benefitData);
     console.log("Dimension Data:", dimensionData);
-    console.log("Lifestyle Data:", lifestyleData);
+    // console.log("Lifestyle Data:", lifestyleData);
     console.log("Stock Data:", stockData);
 
     const combinedData = [
       ...(benefitData && benefitData.status === 'fulfilled' ? [{ image_url: benefitData.value.image_url, polotno_json: benefitData.value.polotno_json }] : []),
       ...(dimensionData && dimensionData.status === 'fulfilled' ? [{ image_url: dimensionData.value.image_url, polotno_json: dimensionData.value.polotno_json }] : []),
-      ...(lifestyleData && lifestyleData.status === 'fulfilled' ? [{ image_url: lifestyleData.value.image_url, polotno_json: lifestyleData.value.polotno_json }] : []),
+      // ...(lifestyleData && lifestyleData.status === 'fulfilled' ? [{ image_url: lifestyleData.value.image_url, polotno_json: lifestyleData.value.polotno_json }] : []),
       ...(stockData && stockData.status === 'fulfilled' ? stockData.value : [])
     ];    
 
