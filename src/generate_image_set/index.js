@@ -19,13 +19,15 @@ exports.handler = async (event, context) => {
     // benefit infographic: JSON (S3 link)
     const processBenefit = async () => {
       console.log("Processing benefit infographic: ", s3benefit);
+      if (!isValidS3Url(s3benefit)) {
+        console.log("Invalid S3 URL for benefit infographic, skipping...");
+        return { image_url: "", polotno_json: "" };
+      }
       const benefitJsonUrl = s3benefit;
       const benefitKey = `${baseKey}_benefit_design_out`;
       const benefitPngUrl = `${process.env.S3_BUCKET_URL}/${benefitKey}.png`;
       const benefitTemplateJSON = await fetchJson(s3benefit);
-      console.log("Benefit JSON Template: ", benefitTemplateJSON);
       const benefitPngBlob = await jsonToBlob(benefitTemplateJSON, browser);
-      console.log('Benefit PNG Blob size:', benefitPngBlob.length);
       if (!benefitPngBlob || benefitPngBlob.length === 0) {
         console.log(`Failed to generate PNG for benefit template: ${benefitPngUrl}.`);
         return { image_url: "", polotno_json: "" };
@@ -38,8 +40,12 @@ exports.handler = async (event, context) => {
     // dimension infographic: JSON template
     const processDimension = async () => {
       console.log("Processing dimension infographic...");
-      const dimensionTemplateJSON = JSON.parse(s3dimension).template;
-      console.log("Dimension JSON Template: ", dimensionTemplateJSON);
+      const dimensionJSON = JSON.parse(s3dimension).template;
+      if (!dimensionJSON.template) {
+        console.log("No 'template' found in dimension infographic, skipping...");
+        return { image_url: "", polotno_json: "" }; 
+      }
+      const dimensionTemplateJSON = dimensionJSON.template;
       const dimensionKey = `${baseKey}_dimension_design_out`;
       const dimensionJsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
       const dimensionPngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
@@ -58,6 +64,10 @@ exports.handler = async (event, context) => {
     // lifestyle infographic: JPEG
     const processLifestyle = async () => {
       console.log("Processing lifestyle infographic: ", s3lifestyle);
+      if (!isValidS3Url(s3lifestyle)) {
+        console.log("Invalid S3 URL for lifestyle infographic, skipping...");
+        return { image_url: "", polotno_json: "" };
+      }
       const lifestyleKey = `${baseKey}_lifestyle_design_out`;
       const lifestyleJsonUrl = `${process.env.S3_BUCKET_URL}/${lifestyleKey}.json`;
       const lifestyleJsonStr = JSON.stringify(filledCanvasJSON(s3lifestyle));
@@ -70,9 +80,10 @@ exports.handler = async (event, context) => {
     const processStock = async () => {
       console.log(`Processing stock infographic: ${s3stock}`);
       const stockTemplateJSON = await fetchJson(s3stock);
-      console.log("Stock JSON Template: ", stockTemplateJSON);
-      console.log(`Stock infographic Pages: ${stockTemplateJSON.pages.length}`);
-
+      if (!isValidS3Url(s3stock)) {
+        console.log("Invalid S3 URL for stock infographic, skipping...");
+        return [];
+      }
       const stockKey = `${baseKey}_stock_design_out`;
       const stockImageBlobsAndJsons = await jsonToBlobs(stockTemplateJSON, stockKey, browser);
 
@@ -157,4 +168,9 @@ const fetchJson = async (url) => {
     console.error(`Error fetching from ${url}:`, err);
     throw err;  
   }
+};
+
+const isValidS3Url = (url) => {
+  const regex = /^https:\/\/(?:[a-z0-9-]+\.)+[a-z]{2,6}\/[a-zA-Z0-9\-_]+(?:\/[a-zA-Z0-9\-_]+)*$/;
+  return regex.test(url);
 };
