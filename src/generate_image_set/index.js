@@ -30,7 +30,7 @@ exports.handler = async (event, context) => {
         console.log(`Failed to generate PNG for benefit template: ${benefitPngUrl}.`);
         return { image_url: "", polotno_json: "" };
       }
-      await putObjectToS3(benefitPngUrl, benefitPngBlob, "png", "image/png");
+      await putObjectToS3(benefitKey, benefitPngBlob, "png", "image/png");
       console.log(`Successfully uploaded PNG file for benefit template: ${benefitPngUrl}.`);
       return { image_url: benefitPngUrl, polotno_json: benefitJsonUrl };
     };
