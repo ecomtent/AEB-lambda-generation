@@ -36,6 +36,7 @@ exports.handler = async (event, context) => {
     // dimension infographic: JSON template
     const processDimension = async () => {
       console.log("Processing dimension infographic...")
+      const s3dimension = JSON.parse(s3dimension)
       const dimensionJSON = s3dimension.template
       console.log("Dimension JSON Template: ", dimensionJSON);
       const dimensionKey = `${baseKey}_dimension_design_out`;
