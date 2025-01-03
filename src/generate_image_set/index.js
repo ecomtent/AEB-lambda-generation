@@ -24,6 +24,8 @@ exports.handler = async (event, context) => {
       const templateJSON = await fetchJson(s3benefit);
       console.log("Benefit JSON Template: ", templateJSON);
       const png_blob = await jsonToBlob(templateJSON, browser);
+      console.log('Benefit PNG Blob size:', png_blob.length);
+      console.log("Benefit PNG Blob: ", png_blob);
       if (!png_blob || png_blob.length === 0) {
         console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
         return { image_url: "", polotno_json: "" };
