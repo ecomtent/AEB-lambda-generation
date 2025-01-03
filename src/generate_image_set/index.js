@@ -20,7 +20,8 @@ exports.handler = async (event, context) => {
     const processBenefit = async () => {
       console.log("Processing benefit infographic: ", s3benefit);
       const benefitJsonUrl = s3benefit;
-      const benefitPngUrl = `${process.env.S3_BUCKET_URL}/${baseKey}_benefit_design_out.png`;
+      const benefitKey = `${baseKey}_benefit_design_out`;
+      const benefitPngUrl = `${process.env.S3_BUCKET_URL}/${benefitKey}.png`;
       const benefitTemplateJSON = await fetchJson(s3benefit);
       console.log("Benefit JSON Template: ", benefitTemplateJSON);
       const benefitPngBlob = await jsonToBlob(benefitTemplateJSON, browser);
