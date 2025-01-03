@@ -22,7 +22,8 @@ async function putObjectToS3(key, body, extention, contentType) {
   };
 
   try {
-    await s3Client.send(new PutObjectCommand(params));
+    const result = await s3Client.send(new PutObjectCommand(params));
+    console.log('S3 upload result:', result);
     return true;
   } catch (err) {
     console.error("Error uploading to S3", err);
