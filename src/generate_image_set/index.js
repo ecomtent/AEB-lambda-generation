@@ -18,71 +18,71 @@ exports.handler = async (event, context) => {
     console.log(`Generating image set for seller_id ${seller_id}, listing_id ${listing_id}.`);
     // benefit infographic: JSON (S3 link)
     const processBenefit = async () => {
-      console.log("Processing benefit infographic: ", s3benefit)
-      const jsonUrl = s3benefit;
-      const pngUrl = `${process.env.S3_BUCKET_URL}/${baseKey}_benefit_design_out.png`;
-      const templateJSON = await fetchJson(s3benefit);
-      console.log("Benefit JSON Template: ", templateJSON);
-      const png_blob = await jsonToBlob(templateJSON, browser);
-      console.log('Benefit PNG Blob size:', png_blob.length);
-      console.log("Benefit PNG Blob: ", png_blob);
-      if (!png_blob || png_blob.length === 0) {
-        console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
+      console.log("Processing benefit infographic: ", s3benefit);
+      const benefitJsonUrl = s3benefit;
+      const benefitPngUrl = `${process.env.S3_BUCKET_URL}/${baseKey}_benefit_design_out.png`;
+      const benefitTemplateJSON = await fetchJson(s3benefit);
+      console.log("Benefit JSON Template: ", benefitTemplateJSON);
+      const benefitPngBlob = await jsonToBlob(benefitTemplateJSON, browser);
+      console.log('Benefit PNG Blob size:', benefitPngBlob.length);
+      if (!benefitPngBlob || benefitPngBlob.length === 0) {
+        console.log(`Failed to generate PNG for benefit template: ${benefitPngUrl}.`);
         return { image_url: "", polotno_json: "" };
       }
-      await putObjectToS3(pngUrl, png_blob, "png", "image/png");
-      console.log(`Successfully uploaded PNG file for benefit template: ${pngUrl}.`);
-      return { image_url: pngUrl, polotno_json: jsonUrl }
+      await putObjectToS3(benefitPngUrl, benefitPngBlob, "png", "image/png");
+      console.log(`Successfully uploaded PNG file for benefit template: ${benefitPngUrl}.`);
+      return { image_url: benefitPngUrl, polotno_json: benefitJsonUrl };
     };
 
     // dimension infographic: JSON template
     const processDimension = async () => {
-      console.log("Processing dimension infographic...")
-      const dimensionJSON = JSON.parse(s3dimension).template
-      console.log("Dimension JSON Template: ", dimensionJSON);
+      console.log("Processing dimension infographic...");
+      const dimensionTemplateJSON = JSON.parse(s3dimension).template;
+      console.log("Dimension JSON Template: ", dimensionTemplateJSON);
       const dimensionKey = `${baseKey}_dimension_design_out`;
-      const jsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
-      const pngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
-      const json_data = JSON.stringify(dimensionJSON);
-      const png_blob = await jsonToBlob(dimensionJSON, browser);
-      if (!png_blob || png_blob.length === 0) {
-        console.log(`Failed to generate PNG for benefit template: ${pngUrl}.`);
+      const dimensionJsonUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.json`;
+      const dimensionPngUrl = `${process.env.S3_BUCKET_URL}/${dimensionKey}.png`;
+      const dimensionJsonData = JSON.stringify(dimensionTemplateJSON);
+      const dimensionPngBlob = await jsonToBlob(dimensionTemplateJSON, browser);
+      if (!dimensionPngBlob || dimensionPngBlob.length === 0) {
+        console.log(`Failed to generate PNG for dimension template: ${dimensionPngUrl}.`);
         return { image_url: "", polotno_json: "" };
       }
-      await putObjectToS3(dimensionKey, json_data, "json", "application/json");
-      await putObjectToS3(dimensionKey, png_blob, "png", "image/png");
-      console.log(`Successfully uploaded JSON file for dimension template: ${jsonUrl}.`);
-      console.log(`Successfully uploaded PNG file for dimension template: ${pngUrl}.`);
-      return { image_url: pngUrl, polotno_json: jsonUrl };
+      await putObjectToS3(dimensionKey, dimensionJsonData, "json", "application/json");
+      await putObjectToS3(dimensionKey, dimensionPngBlob, "png", "image/png");
+      console.log(`Successfully uploaded JSON and PNG files for dimension template: ${dimensionJsonUrl}, ${dimensionPngUrl}.`);
+      return { image_url: dimensionPngUrl, polotno_json: dimensionJsonUrl };
     };
 
     // lifestyle infographic: JPEG
     const processLifestyle = async () => {
-      console.log("Processing lifestyle infographic: ", s3lifestyle)
+      console.log("Processing lifestyle infographic: ", s3lifestyle);
       const lifestyleKey = `${baseKey}_lifestyle_design_out`;
       const lifestyleJsonUrl = `${process.env.S3_BUCKET_URL}/${lifestyleKey}.json`;
-      const json_str = JSON.stringify(filledCanvasJSON(s3lifestyle));
-      await putObjectToS3(lifestyleKey, json_str, "json", "application/json");
+      const lifestyleJsonStr = JSON.stringify(filledCanvasJSON(s3lifestyle));
+      await putObjectToS3(lifestyleKey, lifestyleJsonStr, "json", "application/json");
 
       return { image_url: s3lifestyle, polotno_json: lifestyleJsonUrl };
     };
     
     // stock infographic: multipage JSON
     const processStock = async () => {
-      console.log(`Processing stock infographic: ${s3stock}, Pages: ${stockJSON.pages.length}`);
+      console.log(`Processing stock infographic: ${s3stock}`);
+      const stockTemplateJSON = await fetchJson(s3stock);
+      console.log("Stock JSON Template: ", stockTemplateJSON);
+      console.log(`Stock infographic Pages: ${stockTemplateJSON.pages.length}`);
+
       const stockKey = `${baseKey}_stock_design_out`;
-      const stockJSON = await fetchJson(s3stock);
-      console.log("Stock JSON Template: ", s3stock);
-      const stockImageBlobsAndJsons = await jsonToBlobs(stockJSON, stockKey, browser);
+      const stockImageBlobsAndJsons = await jsonToBlobs(stockTemplateJSON, stockKey, browser);
 
       return Promise.all(stockImageBlobsAndJsons.map(async ({ idx, json_str, png_blob }) => {
-        const jsonUrl = `${process.env.S3_BUCKET_URL}/${idx}.json`;
-        const pngUrl = `${process.env.S3_BUCKET_URL}/${idx}.png`;
+        const stockJsonUrl = `${process.env.S3_BUCKET_URL}/${idx}.json`;
+        const stockPngUrl = `${process.env.S3_BUCKET_URL}/${idx}.png`;
         await Promise.all([
           putObjectToS3(idx, json_str, "json", "application/json"),
           putObjectToS3(idx, png_blob, "png", "image/png")
         ]);
-        return { image_url: pngUrl, polotno_json: jsonUrl };
+        return { image_url: stockPngUrl, polotno_json: stockJsonUrl };
       }));
     };
 
